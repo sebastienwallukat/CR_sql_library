@@ -18,4 +18,4 @@ This dataset is like the daily newspaper of chargeback rates. It keeps one line 
 
 Feel free to explore these datasets and use them in your queries. Remember, this is a living document. We encourage everyone to contribute by adding new queries or refining existing ones. Let's work together to make this a valuable resource for our team.
 
-Happy querying! :computer: :coffee:
+Happy querying! :computer: :coffee:Ò

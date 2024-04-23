@@ -1,7 +1,7 @@
 # :construction: Work in Progress :construction:
 
 # Welcome to Our SQL Query Library! :books:
-
+xx
 Hello there! :wave: Welcome to our cozy corner of SQL queries. This repository is more than just a collection of SQL queries we use regularly. It's our knowledge hub, our go-to guide, and our secret weapon for maintaining consistency in our data analysis. 
 
 Think of this library as a bustling marketplace, where each stall is a different file dedicated to a specific data point. Each stallholder (file) offers a variety of goods (queries) aimed at calculating their specialty (data point). 

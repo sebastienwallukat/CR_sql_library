@@ -1,5 +1,5 @@
 ## Look into rules metadata
-
+```
 SELECT 
 r.shop_id,
     r.detection_identifier as rule_name,
@@ -19,3 +19,4 @@ FROM
 WHERE
   DATE(t.created_at) >= date('2024-01-01')
   AND detection_identifier = 'Event::Shop10kTo50kThreshold'-- << you need to use the detection_identifier of the rule 
+````

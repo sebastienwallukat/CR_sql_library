@@ -7,7 +7,7 @@ Hello there! :wave: Welcome to our cozy corner of SQL queries. This repository i
 Think of this library as a bustling marketplace, where each stall is a different file dedicated to a specific data point. Each stallholder (file) offers a variety of goods (queries) aimed at calculating their specialty (data point). 
 
 And for those who love a good treasure hunt, we have a couple of files dedicated to more complex, comprehensive queries. :mag:
-
+s
 ## Our Stalls (Files) :file_folder:
 
 1. [Chargeback](./Chargeback.md) - Your one-stop-shop for all things chargeback.

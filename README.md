@@ -1,26 +1,60 @@
-# :construction: Work in Progress :construction:
+# Credit Risk SQL Query Resource Center 📊
 
-# Welcome to Our SQL Query Library! :books:
+Welcome to the **Credit Risk SQL Query Resource Center**! This repository serves as the central knowledge hub for our team's most valuable SQL queries, datasets, and analytics resources.
 
-Hello there! :wave: Welcome to our cozy corner of SQL queries. This repository is more than just a collection of SQL queries we use regularly. It's our knowledge hub, our go-to guide, and our secret weapon for maintaining consistency in our data analysis. 
+## Purpose
 
-Think of this library as a bustling marketplace, where each stall is a different file dedicated to a specific data point. Each stallholder (file) offers a variety of goods (queries) aimed at calculating their specialty (data point). 
+This repository is designed to:
+- Maintain consistency in our data analysis approach
+- Provide quick access to verified, tested SQL queries
+- Document our data sources and calculation methodologies
+- Serve as an onboarding resource for new team members
 
-And for those who love a good treasure hunt, we have a couple of files dedicated to more complex, comprehensive queries. :mag:
-s
-## Our Stalls (Files) :file_folder:
+## Resource Categories
 
-1. [Chargeback](./Chargeback.md) - Your one-stop-shop for all things chargeback.
-2. [Order](./Order.md) - Everything you need to know about orders.
-3. [Shopify Payment Balance](./Shopify_Payment_Balance.md) - Balancing the books, Shopify style.
-4. [Booked Losses](./Booked_Losses.md) - A necessary evil, let's make it easier.
-5. [TrustPlatform Tickets](./TrustPlatform_Tickets.md) - Your ticket to understanding TrustPlatform.
-6. [Others](./Others.md) - A mixed bag of useful queries.
-7. [Full Query - Shop](./Full_Query_Shop.md) - The whole shebang for Shop data.
-8. [Full Query - TrustPlatform](./Full_Query_TrustPlatform.md) - The full monty for TrustPlatform data.
+### Risk Assessment Tools
+- [Chargeback Analysis](./Chargeback.md) - Queries for chargeback rates, trends, and risk indicators
+- [GPV (Gross Processing Volume)](./GPV.md) - Processing volume metrics and growth patterns
+- [Transaction Risk Scoring](./Risk_Scoring.md) - Models and queries for transaction risk evaluation
 
-Feel free to explore, use, and contribute to these files. This library is a living, breathing document. We encourage everyone to add new queries, refine existing ones, and share their knowledge. 
+### Financial Metrics
+- [Shopify Payment Balance](./Shopify_Payment_Balance.md) - Balance tracking and reconciliation
+- [Booked Losses](./Booked_Losses.md) - Loss tracking, classification, and trend analysis
+- [Revenue Metrics](./Revenue.md) - Revenue tracking and performance indicators
 
-So, let's collaborate and make this a valuable resource for our team. :handshake:
+### Operational Resources
+- [TrustPlatform Tickets](./TrustPlatform_Tickets.md) - Ticket analytics and case management
+- [Merchant Monitoring](./Merchant_Monitoring.md) - Merchant health and activity tracking
+- [Fraud Detection](./Fraud_Detection.md) - Fraud patterns and detection mechanisms
 
-Happy querying! :computer: :coffee:
+### Comprehensive Queries
+- [Full Query - Shop](./Full_Query_Shop.md) - End-to-end shop analysis queries
+- [Full Query - TrustPlatform](./Full_Query_TrustPlatform.md) - Complete TrustPlatform data analysis
+
+## How to Use This Repository
+
+1. **Navigate to your topic of interest** - Each file focuses on a specific data domain
+2. **Review available queries** - Find the most appropriate query for your analysis
+3. **Access data sources** - Follow links to Dataplex or other data platforms
+4. **Contribute your knowledge** - Add new queries or improve existing ones
+
+## Contributing
+
+This is a living repository that grows with our team's expertise. We encourage everyone to:
+- Add new queries that you find useful
+- Improve existing queries for better performance
+- Document new data sources as they become available
+- Share insights about data structures and relationships
+
+## Best Practices
+
+- Include comments in your queries to explain complex logic
+- Document the purpose and expected output of each query
+- Include links to relevant data sources and metadata
+- Test your queries before adding them to the repository
+
+---
+
+**Happy data exploring!** 📈 💻
+
+*For questions or suggestions about this repository, please contact the Credit Risk Data Team.*

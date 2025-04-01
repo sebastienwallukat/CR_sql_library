@@ -1,119 +1,165 @@
-# Transaction Risk Scoring Queries 🛡️
+# Risk Scoring Analysis
 
-Welcome to the Transaction Risk Scoring section of our SQL Query Resource Center. This page contains models and queries for evaluating transaction risk.
+## Introduction
+Risk scoring is essential for identifying potentially fraudulent transactions and high-risk merchants. This page provides SQL queries to analyze risk scores, identify patterns, and evaluate the effectiveness of risk models.
 
-## Datasets 📁
+## Datasets
+The following datasets contain risk scoring information:
 
-### `sdp-prd-cti-data.risk.transaction_risk_scores`
+- `shopify-dw.risk.risk_assessments` - Primary source for risk scores and assessments
+- `shopify-dw.risk.risk_factors` - Factors contributing to risk scores
+- `shopify-dw.merchant_trust.risk_signals` - Signals indicating potential risk
+- `shopify-dw.money_products.payment_transactions` - Transaction data for correlation
+- `shopify-dw.merchant_trust.shop_trust_metrics` - Shop-level trust indicators
 
-This dataset contains risk scores assigned to individual transactions, along with the contributing factors.
+## Common Queries
 
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
-
-### `sdp-prd-cti-data.risk.shop_risk_profile`
-
-This dataset provides aggregated risk profiles for shops based on their transaction history.
-
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
-
-## Common Queries 💻
-
-### High-Risk Transactions by Shop
-
+### Transaction Risk Score Distribution
 ```sql
 SELECT
-  t.shop_id,
-  COUNT(*) as total_transactions,
-  COUNTIF(risk_score > 0.8) as high_risk_transactions,
-  COUNTIF(risk_score > 0.8) / COUNT(*) as high_risk_ratio
+  ROUND(risk_score * 10) / 10 AS risk_score_bucket,
+  COUNT(*) AS assessment_count,
+  COUNT(*) / SUM(COUNT(*)) OVER () AS percentage
 FROM
-  `sdp-prd-cti-data.risk.transaction_risk_scores` t
+  `shopify-dw.risk.risk_assessments`
 WHERE
-  transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+  assessment_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+  AND assessment_type = 'TRANSACTION'
 GROUP BY
-  shop_id
-HAVING
-  total_transactions > 50
-  AND high_risk_ratio > 0.1
+  risk_score_bucket
 ORDER BY
-  high_risk_ratio DESC
+  risk_score_bucket
+```
+
+### High-Risk Transactions by Merchant
+```sql
+SELECT
+  merchant_id,
+  COUNT(*) AS total_transactions,
+  COUNT(CASE WHEN risk_score >= 0.8 THEN 1 END) AS high_risk_count,
+  ROUND(COUNT(CASE WHEN risk_score >= 0.8 THEN 1 END) / COUNT(*) * 100, 2) AS high_risk_percentage,
+  AVG(risk_score) AS avg_risk_score,
+  MAX(risk_score) AS max_risk_score
+FROM
+  `shopify-dw.risk.risk_assessments`
+WHERE
+  assessment_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+  AND assessment_type = 'TRANSACTION'
+GROUP BY
+  merchant_id
+HAVING
+  COUNT(*) >= 50  -- Only include merchants with at least 50 assessments
+  AND COUNT(CASE WHEN risk_score >= 0.8 THEN 1 END) >= 5  -- With at least 5 high-risk transactions
+ORDER BY
+  high_risk_percentage DESC
+LIMIT 100
 ```
 
 ### Risk Factor Analysis
-
 ```sql
 SELECT
-  risk_factor,
-  COUNT(*) as occurrences,
-  AVG(factor_weight) as avg_weight,
-  AVG(risk_score) as avg_risk_score
+  rf.factor_name,
+  COUNT(*) AS occurrence_count,
+  AVG(ra.risk_score) AS avg_risk_score,
+  MIN(ra.risk_score) AS min_risk_score,
+  MAX(ra.risk_score) AS max_risk_score
 FROM
-  `sdp-prd-cti-data.risk.transaction_risk_scores` t,
-  UNNEST(risk_factors) as risk_factor
+  `shopify-dw.risk.risk_factors` rf
+JOIN
+  `shopify-dw.risk.risk_assessments` ra
+  ON rf.assessment_id = ra.assessment_id
 WHERE
-  transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+  ra.assessment_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+  AND ra.assessment_type = 'TRANSACTION'
 GROUP BY
-  risk_factor
+  rf.factor_name
 ORDER BY
-  occurrences DESC
+  occurrence_count DESC
+LIMIT 20
 ```
 
-### Shop Risk Profile Trends
-
+### Risk Score Correlation with Fraud
 ```sql
-WITH monthly_risk AS (
+WITH transaction_data AS (
   SELECT
-    shop_id,
-    DATE_TRUNC(profile_date, MONTH) as month,
-    AVG(risk_score) as avg_risk_score
+    t.transaction_id,
+    t.merchant_id,
+    t.amount_usd,
+    ra.risk_score,
+    CASE WHEN d.dispute_id IS NOT NULL AND d.reason_code = 'FRAUD' THEN 1 ELSE 0 END AS is_fraud
   FROM
-    `sdp-prd-cti-data.risk.shop_risk_profile`
+    `shopify-dw.money_products.payment_transactions` t
+  LEFT JOIN
+    `shopify-dw.risk.risk_assessments` ra
+    ON t.transaction_id = ra.transaction_id
+    AND ra.assessment_type = 'TRANSACTION'
+  LEFT JOIN
+    `shopify-dw.money_products.disputes` d
+    ON t.transaction_id = d.transaction_id
+    AND d.dispute_type = 'CHARGEBACK'
+    AND d.reason_code = 'FRAUD'
   WHERE
-    profile_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
-  GROUP BY
-    shop_id, month
+    t.transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
+    AND t.status = 'SUCCESS'
 )
 
 SELECT
-  shop_id,
-  month,
-  avg_risk_score,
-  LAG(avg_risk_score) OVER (PARTITION BY shop_id ORDER BY month) as prev_month_score,
-  avg_risk_score - LAG(avg_risk_score) OVER (PARTITION BY shop_id ORDER BY month) as score_change
+  ROUND(risk_score * 10) / 10 AS risk_score_bucket,
+  COUNT(*) AS transaction_count,
+  SUM(is_fraud) AS fraud_count,
+  ROUND(SUM(is_fraud) / COUNT(*) * 100, 2) AS fraud_rate_pct
 FROM
-  monthly_risk
+  transaction_data
+WHERE
+  risk_score IS NOT NULL
+GROUP BY
+  risk_score_bucket
 ORDER BY
-  score_change DESC
+  risk_score_bucket
 ```
 
-## Risk Model Information 📊
+### Risk Signals by Transaction Amount
+```sql
+SELECT
+  CASE
+    WHEN amount_usd < 50 THEN 'Under $50'
+    WHEN amount_usd BETWEEN 50 AND 100 THEN '$50-$100'
+    WHEN amount_usd BETWEEN 100 AND 250 THEN '$100-$250'
+    WHEN amount_usd BETWEEN 250 AND 500 THEN '$250-$500'
+    WHEN amount_usd BETWEEN 500 AND 1000 THEN '$500-$1000'
+    ELSE 'Over $1000'
+  END AS amount_range,
+  COUNT(*) AS transaction_count,
+  COUNT(DISTINCT signal_id) AS signal_count,
+  COUNT(DISTINCT signal_id) / COUNT(*) AS signals_per_transaction,
+  COUNT(DISTINCT CASE WHEN signal_type = 'AVS_MISMATCH' THEN signal_id END) AS avs_mismatch_count,
+  COUNT(DISTINCT CASE WHEN signal_type = 'CVV_FAILURE' THEN signal_id END) AS cvv_failure_count,
+  COUNT(DISTINCT CASE WHEN signal_type = 'IP_LOCATION_MISMATCH' THEN signal_id END) AS ip_mismatch_count
+FROM
+  `shopify-dw.money_products.payment_transactions` t
+LEFT JOIN
+  `shopify-dw.merchant_trust.risk_signals` rs
+  ON t.transaction_id = rs.transaction_id
+WHERE
+  t.transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+  AND t.status = 'SUCCESS'
+GROUP BY
+  amount_range
+ORDER BY
+  MIN(amount_usd)
+```
 
-Our transaction risk scoring model incorporates multiple factors including:
+## Best Practices
 
-1. **Transaction Characteristics**
-   - Amount relative to shop average
-   - Time of day
-   - Payment method
-   - Device information
+- Regularly monitor the effectiveness of risk scores by comparing to actual fraud outcomes
+- Consider multiple risk thresholds based on merchant category and transaction size
+- Examine outliers: both high-risk transactions that weren't fraudulent and low-risk transactions that were
+- Create merchant risk segments based on historical patterns and industry categories
+- Review risk factors for their predictive power and adjust weights accordingly
+- Combine transaction risk scores with merchant trust metrics for a comprehensive view
+- Document false positives to improve future risk model iterations
 
-2. **Customer Behavior**
-   - Velocity checks
-   - Location vs billing address
-   - Customer history
-
-3. **Merchant Profile**
-   - Industry risk category
-   - Processing history
-   - Chargeback rate
-
-The model outputs a risk score between 0 and 1, with higher values indicating higher risk.
-
-## Notes and Best Practices 📝
-
-- Risk scores should be used as indicators, not absolute determinants
-- Consider multiple risk factors when evaluating transactions
-- Regularly review and update risk model thresholds based on performance
-
-Feel free to contribute new queries or improve the existing ones. Together, we can build a comprehensive resource for transaction risk scoring.
-
-Happy risk analyzing! 🔍 
+## References
+- [Risk Assessment Documentation](https://shopify.dev/docs)
+- [Risk Factor Definitions](https://shopify.dev/api)
+- [Fraud Prevention Best Practices](https://shopify.dev/docs) 

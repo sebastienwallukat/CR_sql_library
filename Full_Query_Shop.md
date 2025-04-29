@@ -78,7 +78,7 @@ shop_tickets AS (
     COUNTIF(t.ticket_type = 'fraud_investigation') as fraud_investigation_tickets,
     MAX(t.created_at) as latest_ticket_date
   FROM
-    `sdp-prd-cti-data.base.base__tickets` t
+    `shopify-dw.risk.trust_platform_tickets_summary_v1` t
   WHERE
     t.shop_id = @shop_id
     AND t.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
@@ -118,6 +118,22 @@ shop_risk_indicators AS (
       FROM `sdp-prd-cti-data.merchant.shop_risk_indicators`
       WHERE shop_id = @shop_id
     )
+),
+
+shop_reserves AS (
+  SELECT
+    r.merchant_id as shop_id,
+    r.reserve_rate,
+    r.reserve_type,
+    r.rolling_window_days,
+    r.minimum_reserve_amount_usd,
+    r.effective_from_date,
+    r.effective_to_date
+  FROM
+    `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` r
+  WHERE
+    r.merchant_id = @shop_id
+    AND CURRENT_DATE() BETWEEN r.effective_from_date AND COALESCE(r.effective_to_date, '9999-12-31')
 )
 
 SELECT
@@ -150,7 +166,10 @@ SELECT
   r.velocity_score,
   r.customer_complaint_count_30d,
   r.avg_transaction_amount,
-  r.transaction_count_daily
+  r.transaction_count_daily,
+  res.reserve_rate,
+  res.reserve_type,
+  res.minimum_reserve_amount_usd
 FROM
   shop_base b
   LEFT JOIN shop_processing p ON b.shop_id = p.shop_id
@@ -159,6 +178,7 @@ FROM
   LEFT JOIN shop_tickets t ON b.shop_id = t.shop_id
   LEFT JOIN shop_losses l ON b.shop_id = l.shop_id
   LEFT JOIN shop_risk_indicators r ON b.shop_id = r.shop_id
+  LEFT JOIN shop_reserves res ON b.shop_id = res.shop_id
 ```
 
 ## Shop Risk Comparison with Industry Peers
@@ -330,10 +350,38 @@ shop_tickets AS (
     CONCAT('ticket_', ticket_type) as event_type,
     CONCAT('Ticket created: ', ticket_id, ' - ', ticket_type, ' - Priority: ', priority) as event_description
   FROM
-    `sdp-prd-cti-data.base.base__tickets`
+    `shopify-dw.risk.trust_platform_tickets_summary_v1`
   WHERE
     shop_id = @shop_id
     AND created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
+),
+
+shop_ticket_actions AS (
+  SELECT
+    t.shop_id,
+    a.created_at as event_date,
+    'ticket_action' as event_type,
+    CONCAT('Ticket action: ', t.ticket_id, ' - ', a.action_type) as event_description
+  FROM
+    `shopify-dw.risk.trust_platform_actions_summary_v1` a
+    JOIN `shopify-dw.risk.trust_platform_tickets_summary_v1` t ON a.ticket_id = t.ticket_id
+  WHERE
+    t.shop_id = @shop_id
+    AND a.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
+),
+
+shop_ticket_escalations AS (
+  SELECT
+    t.shop_id,
+    e.created_at as event_date,
+    'ticket_escalation' as event_type,
+    CONCAT('Ticket escalated: ', t.ticket_id, ' - Reason: ', e.escalation_reason) as event_description
+  FROM
+    `shopify-dw.risk.trust_platform_ticket_escalations_v1` e
+    JOIN `shopify-dw.risk.trust_platform_tickets_summary_v1` t ON e.ticket_id = t.ticket_id
+  WHERE
+    t.shop_id = @shop_id
+    AND e.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
 ),
 
 shop_losses AS (
@@ -364,12 +412,29 @@ shop_risk_changes AS (
     AND ABS(risk_score - LAG(risk_score) OVER (PARTITION BY shop_id ORDER BY snapshot_date)) > 0.1
 ),
 
+shop_reserve_changes AS (
+  SELECT
+    merchant_id as shop_id,
+    effective_from_date as event_date,
+    'reserve_change' as event_type,
+    CONCAT('Reserve configuration updated: Rate=', CAST(reserve_rate*100 as STRING), '%, Type=', reserve_type, 
+           ', Min Amount=$', FORMAT('%,.2f', minimum_reserve_amount_usd)) as event_description
+  FROM
+    `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations`
+  WHERE
+    merchant_id = @shop_id
+    AND effective_from_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
+),
+
 all_events AS (
   SELECT * FROM shop_transactions
   UNION ALL SELECT * FROM shop_chargebacks
   UNION ALL SELECT * FROM shop_tickets
+  UNION ALL SELECT * FROM shop_ticket_actions
+  UNION ALL SELECT * FROM shop_ticket_escalations
   UNION ALL SELECT * FROM shop_losses
   UNION ALL SELECT * FROM shop_risk_changes
+  UNION ALL SELECT * FROM shop_reserve_changes
 )
 
 SELECT
@@ -389,6 +454,7 @@ ORDER BY
 - For production use, these queries may need optimization or pre-aggregated tables
 - Add custom filters based on your specific analysis needs
 - Adjust date ranges based on the shop's age and processing history
+- Always use the recommended tables for tickets (`shopify-dw.risk.trust_platform_*`) and reserves (`sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations`)
 
 Feel free to contribute new full queries or improve the existing ones. Together, we can build a comprehensive resource for shop analysis.
 

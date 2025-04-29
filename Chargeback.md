@@ -6,6 +6,7 @@ Chargebacks occur when customers dispute transactions with their financial insti
 ## Datasets
 The following datasets contain chargeback-related information:
 
+- `shopify-dw.money_products.chargebacks_summary` - Comprehensive, pre-aggregated chargeback data (recommended)
 - `shopify-dw.money_products.disputes` - Primary source for chargeback/dispute data
 - `shopify-dw.money_products.dispute_evidence` - Evidence submitted for disputes
 - `shopify-dw.money_products.payment_transactions` - Original transaction data
@@ -13,6 +14,76 @@ The following datasets contain chargeback-related information:
 - `shopify-dw.risk.fraud_indicators` - Fraud indicators related to disputes
 
 ## Common Queries
+
+### Merchant Chargeback Analysis Using Recommended Table
+```sql
+SELECT
+  merchant_id,
+  DATE_TRUNC(chargeback_date, MONTH) AS month,
+  COUNT(chargeback_id) AS chargeback_count,
+  SUM(amount_usd) AS chargeback_amount_usd,
+  AVG(amount_usd) AS avg_chargeback_amount_usd,
+  COUNTIF(outcome = 'WON') AS won_count,
+  COUNTIF(outcome = 'LOST') AS lost_count,
+  COUNTIF(outcome = 'PENDING') AS pending_count,
+  ROUND(COUNTIF(outcome = 'WON') / NULLIF(COUNT(chargeback_id), 0) * 100, 2) AS win_rate_pct
+FROM
+  `shopify-dw.money_products.chargebacks_summary`
+WHERE 
+  chargeback_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
+  AND merchant_id = @merchant_id
+GROUP BY
+  merchant_id, month
+ORDER BY
+  month DESC
+```
+
+### Top Merchants by Chargeback Rate Using Recommended Table
+```sql
+WITH merchant_metrics AS (
+  SELECT
+    c.merchant_id,
+    COUNT(DISTINCT c.chargeback_id) AS chargeback_count,
+    SUM(c.amount_usd) AS chargeback_amount_usd,
+    MAX(t.transaction_count) AS transaction_count,
+    MAX(t.transaction_amount_usd) AS transaction_amount_usd
+  FROM
+    `shopify-dw.money_products.chargebacks_summary` c
+  JOIN (
+    SELECT
+      merchant_id,
+      COUNT(*) AS transaction_count,
+      SUM(amount_usd) AS transaction_amount_usd
+    FROM
+      `shopify-dw.money_products.payment_transactions`
+    WHERE
+      status = 'SUCCESS'
+      AND transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+    GROUP BY
+      merchant_id
+  ) t ON c.merchant_id = t.merchant_id
+  WHERE
+    c.chargeback_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+  GROUP BY
+    c.merchant_id
+)
+
+SELECT
+  merchant_id,
+  chargeback_count,
+  chargeback_amount_usd,
+  transaction_count,
+  transaction_amount_usd,
+  ROUND(chargeback_count / NULLIF(transaction_count, 0) * 100, 3) AS chargeback_rate_pct,
+  ROUND(chargeback_amount_usd / NULLIF(transaction_amount_usd, 0) * 100, 3) AS chargeback_amount_rate_pct
+FROM
+  merchant_metrics
+WHERE
+  transaction_count >= 100  -- Only merchants with meaningful volume
+ORDER BY
+  chargeback_rate_pct DESC
+LIMIT 100
+```
 
 ### Basic Chargeback Rate Calculation
 ```sql
@@ -163,6 +234,7 @@ LIMIT 100
 
 ## Best Practices
 
+- Use `shopify-dw.money_products.chargebacks_summary` for most chargeback analyses as it's optimized and comprehensive
 - Monitor chargeback rates by both count and amount; they can tell different stories
 - Segment analysis by product category, transaction size, and geography to identify risk patterns
 - Track win rates by reason code to prioritize evidence collection strategies
@@ -170,6 +242,7 @@ LIMIT 100
 - Focus on merchants with a high number of disputes within first 30 days of transaction
 - Chargebacks with reason codes "fraud" or "not recognized" deserve special scrutiny
 - Always correlate chargebacks with other risk signals for a comprehensive view
+- Remember to use `shopify-dw` as the billing project for all queries
 
 ## References
 - [Dispute Resolution Guide](https://shopify.dev/docs)

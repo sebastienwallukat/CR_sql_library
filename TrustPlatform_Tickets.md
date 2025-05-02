@@ -8,19 +8,13 @@ Welcome to the TrustPlatform Tickets section of our SQL Query Resource Center. T
 
 This is the primary recommended dataset for all ticket analysis. It contains comprehensive ticket information with key metadata.
 
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/search?project=shopify-dw&q=trust_platform_tickets_summary_v1)
-
 ### `shopify-dw.risk.trust_platform_actions_summary_v1`
 
 This dataset contains all actions taken on tickets, enabling detailed analysis of ticket workflows and resolutions.
 
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/search?project=shopify-dw&q=trust_platform_actions_summary_v1)
-
 ### `shopify-dw.risk.trust_platform_ticket_escalations_v1`
 
 This dataset captures all ticket escalation events, allowing for analysis of escalation patterns and effectiveness.
-
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/search?project=shopify-dw&q=trust_platform_ticket_escalations_v1)
 
 ## Legacy Datasets (Not Recommended)
 

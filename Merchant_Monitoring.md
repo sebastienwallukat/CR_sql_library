@@ -1,4 +1,4 @@
-# Merchant Monitoring Queries 👁️
+# Merchant Monitoring Queries 🔍
 
 Welcome to the Merchant Monitoring section of our SQL Query Resource Center. This page contains datasets and queries for tracking merchant health and activity.
 
@@ -6,15 +6,11 @@ Welcome to the Merchant Monitoring section of our SQL Query Resource Center. Thi
 
 ### `sdp-prd-cti-data.merchant.shop_risk_indicators`
 
-This dataset provides daily snapshots of key risk indicators for each merchant.
+This dataset contains risk scores and indicators for merchants, updated daily.
 
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
+### `sdp-prd-cti-data.merchant.shop_monitoring_events`
 
-### `sdp-prd-cti-data.merchant.shop_activity_events`
-
-This dataset contains significant merchant activity events that may indicate changes in risk profile.
-
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
+This dataset tracks significant events in a merchant's lifecycle, including risk-related flags and status changes.
 
 ## Common Queries 💻
 

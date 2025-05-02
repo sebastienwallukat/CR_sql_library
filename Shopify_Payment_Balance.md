@@ -8,13 +8,9 @@ Welcome to the Shopify Payment Balance section of our SQL Query Resource Center.
 
 This dataset provides daily snapshots of merchant payment balances, perfect for tracking balance changes over time.
 
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
-
 ### `sdp-prd-cti-data.finance.payment_balance_transactions`
 
 This dataset contains individual transactions affecting payment balances, including charges, payouts, and adjustments.
-
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
 
 ## Common Queries 💻
 

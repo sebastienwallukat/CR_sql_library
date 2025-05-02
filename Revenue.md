@@ -1,20 +1,16 @@
-# Revenue Metrics Queries 📊
+# Revenue Metrics Queries 📈
 
 Welcome to the Revenue Metrics section of our SQL Query Resource Center. This page contains datasets and queries for tracking revenue and performance indicators.
 
 ## Datasets 📁
 
-### `sdp-prd-cti-data.finance.shop_revenue_daily`
+### `sdp-prd-cti-data.finance.revenue_summary`
 
-This dataset provides daily snapshots of revenue metrics by shop, including processing fees, subscription fees, and other revenue streams.
-
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
+This dataset provides summary metrics of revenue performance by shop, product, and time period.
 
 ### `sdp-prd-cti-data.finance.revenue_transactions`
 
-This dataset contains individual revenue transactions with detailed categorization.
-
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/projects/sdp-prd-cti-data/locations/us/entryGroups/@bigquery/entries/path_to_dataset)
+This dataset contains detailed revenue transactions with associated metadata for granular analysis.
 
 ## Common Queries 💻
 

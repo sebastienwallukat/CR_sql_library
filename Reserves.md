@@ -8,8 +8,6 @@ Welcome to the Reserves section of our SQL Query Resource Center. This page cont
 
 This is the primary recommended dataset for all reserve analysis. It contains comprehensive information about merchant reserve configurations, including rates, rolling windows, and effective dates.
 
-🔗 [Access on Dataplex](https://console.cloud.google.com/dataplex/search?project=sdp-prd-cti-data&q=base__shopify_payments_reserve_configurations)
-
 ## Common Queries 💻
 
 ### Current Reserve Configurations by Merchant

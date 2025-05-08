@@ -67,7 +67,6 @@ The [Metadata Portal](https://data.shopify.io/search/result?s=gcp&sys=bigquery&p
 
 2. **Search for Tables**
    - Use search terms like "chargeback", "risk", "shop", or "payment"
-   - Filter for `shopify-dw` project
    - Look for tables in the "analytically_modeled" category for analysis-ready data
 
 3. **Review Results**
@@ -75,8 +74,7 @@ The [Metadata Portal](https://data.shopify.io/search/result?s=gcp&sys=bigquery&p
 
 **Example Workflow**:
 1. Search for "chargeback" in the portal
-2. Filter results to `shopify-dw` project
-3. Review schema details for relevant tables
+2. Review schema details for relevant tables
 4. Check lineage to understand data sources
 5. Verify update frequency matches analysis needs
 6. Use field descriptions to build accurate queries
@@ -183,8 +181,7 @@ When you learn something useful about a table:
 ### Identifying Financial Tables with GPV Data
 
 1. Search for `gpv` or `gmv`
-2. Filter for tables in the `finance` dataset
-3. Review schema to confirm GPV-related fields
+2. Review schema to confirm GPV-related fields
 4. Check descriptions to understand calculation methods
 
 ### Exploring Trust Platform Data Structure
@@ -207,8 +204,7 @@ When you learn something useful about a table:
 
 1. Try alternative search terms
 2. Remove filters that might be too restrictive
-3. Ask in the `#credit-risk-data` Slack channel
-4. Check if the table has a different name convention
+3. Check if the table has a different name convention
 
 ### Missing Metadata or Documentation
 
@@ -224,13 +220,6 @@ When you learn something useful about a table:
 3. Look at lineage to understand the data pipeline
 4. Contact the data owner with specific concerns
 
-## Getting Help
 
-If you need assistance:
-
-1. Check internal documentation
-2. Ask in the `#help-data-discovery` Slack channel
-3. Contact the Data Platform team
-4. Attend training sessions when available
 
 --- 

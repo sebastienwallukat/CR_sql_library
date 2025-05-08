@@ -1,173 +1,132 @@
-# Credit Risk SQL Query Resource Center 📊
+# Credit Risk Team Knowledge Base 📊
 
-Welcome to the **Credit Risk SQL Query Resource Center**! This repository serves as the central knowledge hub for our team's most valuable SQL queries, datasets, and analytics resources.
+Welcome to the **Credit Risk Team Knowledge Base**! This repository serves as the central hub for our team's most valuable SQL queries, data resources, tools, and analytics knowledge.
 
 ## Purpose
 
-This repository is designed to:
+This knowledge base is designed to:
+- Provide a comprehensive onboarding resource for new team members
 - Maintain consistency in our data analysis approach
-- Provide quick access to verified, tested SQL queries
-- Document our data sources and calculation methodologies
-- Serve as an onboarding resource for new team members
+- Document our tools, data sources, and methodologies
+- Serve as a reference for common queries and analysis patterns
+- Promote collaboration and knowledge sharing across the team
 
-## Getting Started 🚀
+## Repository Navigation 🧭
 
-### Access Requirements & Billing
+### Getting Started
+- [Onboarding Checklist](./01_Getting_Started/Onboarding_Checklist.md) - Step-by-step guide for new team members
+- [Repository Navigation](./01_Getting_Started/Repository_Navigation.md) - How to find information in this knowledge base
+- [Access and Permissions](./01_Getting_Started/Access_and_Permissions.md) - Guide to required access rights and how to get them
 
-- **BigQuery Billing Project** - ⚠️ Important: All queries and reports must use `shopify-dw` as the billing project
-- **PII Data Access** - For sensitive data access, claim the `sdp-pii` Clouddo permit
-- **Service Accounts** - For Looker Studio integration, submit a Helpdesk request for a Looker Studio Service Account (requires Trust approval)
+### Tools Documentation
+- [BigQuery Guide](./02_Tools/BigQuery_Guide.md) - Complete guide to using BigQuery for credit risk analysis
+- [Plex Guide](./02_Tools/Plex_Guide.md) - How to use Plex for data discovery and metadata
+- [SQL Helper Guide](./02_Tools/SQL_Helper_Guide.md) - Guide to SQL Helper tool for query assistance
+- [AI Chat Tools](./02_Tools/AI_Chat_Tools.md) - When and how to use AI tools for data analysis
+- [Looker Guide](./02_Tools/Looker_Guide.md) - Creating visualizations and dashboards with Looker
 
-### Permission Management
-- **Clouddo** - For managing data access permissions, including `sdp-pii`
-- **Looker Studio Support** - Available at #help-looker-studio-access Slack channel
+### SQL Resources
+- [SQL Basics](./03_SQL_Guide/SQL_Basics.md) - Introduction to SQL structure and syntax
+- [CTE Guide](./03_SQL_Guide/CTE_Guide.md) - Working with Common Table Expressions
+- [SQL Best Practices](./03_SQL_Guide/SQL_Best_Practices.md) - Writing efficient and maintainable SQL
+- [Common SQL Patterns](./03_SQL_Guide/Common_SQL_Patterns.md) - Reusable patterns for credit risk analysis
+- [SQL Troubleshooting](./03_SQL_Guide/SQL_Troubleshooting.md) - Fixing common SQL errors and issues
 
-### How to Use This Repository
+### Data Dictionary
+- [Table Overview](./04_Data_Dictionary/Table_Overview.md) - Comprehensive list of tables used by our team
+- [Table Relationships](./04_Data_Dictionary/Table_Relationships.md) - How tables connect to each other
+- [Chargeback Tables](./04_Data_Dictionary/Chargeback_Tables.md) - Tables related to chargebacks
+- [Shop Tables](./04_Data_Dictionary/Shop_Tables.md) - Tables related to shop data
+- [Risk Tables](./04_Data_Dictionary/Risk_Tables.md) - Tables related to risk indicators
+- [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) - Tables related to financial data
+- [Trust Platform Tables](./04_Data_Dictionary/Trust_Platform_Tables.md) - Tables related to Trust Platform
 
-1. **Navigate to your topic of interest** - Each file focuses on a specific data domain
-2. **Review the available queries** - Each file contains tested, documented SQL queries
-3. **Check source tables** - Each topic includes the recommended data sources
-4. **Contribute your knowledge** - Add new queries or improve existing ones
+### Domain Knowledge
+- [Chargeback Analysis](./05_Domain_Knowledge/Chargeback.md) - Queries for chargeback rates, trends, and risk indicators
+- [GPV Analysis](./05_Domain_Knowledge/GPV.md) - Processing volume metrics and growth patterns
+- [Risk Scoring](./05_Domain_Knowledge/Risk_Scoring.md) - Models and queries for transaction risk evaluation
+- [Reserves Management](./05_Domain_Knowledge/Reserves.md) - Reserve configurations and balance tracking
+- [Capital Recovery](./05_Domain_Knowledge/Capital_Recovery.md) - Analysis of capital recovery activities
+- [Revenue Metrics](./05_Domain_Knowledge/Revenue.md) - Revenue tracking and performance indicators
+- [Fraud Detection](./05_Domain_Knowledge/Fraud_Detection.md) - Fraud patterns and detection mechanisms
+- [Merchant Monitoring](./05_Domain_Knowledge/Merchant_Monitoring.md) - Merchant health and activity tracking
+- [TrustPlatform Tickets](./05_Domain_Knowledge/TrustPlatform_Tickets.md) - Ticket analytics and case management
+- [Booked Losses](./05_Domain_Knowledge/Booked_Losses.md) - Loss tracking, classification, and trend analysis
+- [Shopify Payment Balance](./05_Domain_Knowledge/Shopify_Payment_Balance.md) - Balance tracking and reconciliation
 
-## Repository Structure 📂
+### Example Queries
+- [Full Query - Shop](./06_Example_Queries/Full_Query_Shop.md) - End-to-end shop analysis queries
+- [Full Query - TrustPlatform](./06_Example_Queries/Full_Query_TrustPlatform.md) - Complete TrustPlatform data analysis
+- [Common Query Patterns](./06_Example_Queries/Common_Query_Patterns.md) - Frequently used query structures
 
-### Risk Assessment Tools
-- [Chargeback Analysis](./Chargeback.md) - Queries for chargeback rates, trends, and risk indicators
-- [GPV (Gross Processing Volume)](./GPV.md) - Processing volume metrics and growth patterns
-- [Transaction Risk Scoring](./Risk_Scoring.md) - Models and queries for transaction risk evaluation
+### Case Studies
+- [Case Study 1: Fraud Detection](./07_Case_Studies/Case_Study_1_Fraud_Detection.md) - End-to-end fraud detection workflow
+- [Case Study 2: Reserve Management](./07_Case_Studies/Case_Study_2_Reserve_Management.md) - Reserve optimization analysis
+- [Case Study 3: Chargeback Analysis](./07_Case_Studies/Case_Study_3_Chargeback_Analysis.md) - Detailed chargeback investigation
+- [Case Study 4: Risk Monitoring](./07_Case_Studies/Case_Study_4_Risk_Monitoring.md) - Ongoing risk monitoring process
 
-### Financial Metrics
-- [Shopify Payment Balance](./Shopify_Payment_Balance.md) - Balance tracking and reconciliation
-- [Booked Losses](./Booked_Losses.md) - Loss tracking, classification, and trend analysis
-- [Revenue Metrics](./Revenue.md) - Revenue tracking and performance indicators
-- [Reserves](./Reserves.md) - Reserve configurations and balance tracking
-- [Capital Recovery](./Capital_Recovery.md) - Analysis of capital recovery activities and effectiveness
+### Team Resources
+- [Collaboration Guide](./08_Team_Resources/Collaboration_Guide.md) - How we work together
+- [Slack Channels](./08_Team_Resources/Slack_Channels.md) - Relevant Slack channels and their purposes
+- [Code Review Practices](./08_Team_Resources/Code_Review_Practices.md) - How we review and maintain query quality
+- [Troubleshooting Guide](./08_Team_Resources/Troubleshooting_Guide.md) - Solving common issues with tools and data
 
-### Operational Resources
-- [TrustPlatform Tickets](./TrustPlatform_Tickets.md) - Ticket analytics and case management
-- [Merchant Monitoring](./Merchant_Monitoring.md) - Merchant health and activity tracking
-- [Fraud Detection](./Fraud_Detection.md) - Fraud patterns and detection mechanisms
-
-### Comprehensive Queries
-- [Full Query - Shop](./Full_Query_Shop.md) - End-to-end shop analysis queries
-- [Full Query - TrustPlatform](./Full_Query_TrustPlatform.md) - Complete TrustPlatform data analysis
-
-## Data Resources 📊
-
-### Key Tables and Datasets
+## Key Tables and Datasets 📊
 
 These tables are most commonly used in Credit Risk queries and reports:
 
-| Table Name | Description |
-|------------|-------------|
-| `shopify-dw.money_products.chargebacks_summary` | Comprehensive chargebacks summary data |
-| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | Chargeback count/rate at any given date |
-| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` | Current chargeback rates |
-| `shopify-dw.risk.trust_platform_tickets_summary_v1` | Tickets summary with CR ticket filtering capability |
-| `shopify-dw.finance.shop_gmv_current` | GMV/GPV data (aggregated per day and timeframes) |
-| `shopify-dw.finance.shop_gmv_daily_summary_v1_1` | Detailed daily GMV data for in-depth time series analysis |
-| `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | GPV balance at current moment or any given date |
-| `shopify-dw.raw_shopify.payments_refunds` | Comprehensive refunds data |
-| `sdp-prd-cti-data.intermediate.shop_current_shopify_payments_status` | Current Shopify Payments status |
-| `shopify-dw.money_products.order_transactions_payments_summary` | Detailed order information |
-| `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` | Merchant reserve setup and configuration |
+| Table Name | Description | Location | Documentation |
+|------------|-------------|----------|--------------|
+| `shopify-dw.money_products.chargebacks_summary` | Comprehensive chargebacks summary data | [Chargeback Tables](./04_Data_Dictionary/Chargeback_Tables.md) | [Schema](./04_Data_Dictionary/Chargeback_Tables.md#chargebacks_summary) |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | Chargeback count/rate at any given date | [Chargeback Tables](./04_Data_Dictionary/Chargeback_Tables.md) | [Schema](./04_Data_Dictionary/Chargeback_Tables.md#shop_chargeback_rates_daily_snapshot) |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` | Current chargeback rates | [Chargeback Tables](./04_Data_Dictionary/Chargeback_Tables.md) | [Schema](./04_Data_Dictionary/Chargeback_Tables.md#shop_chargeback_rates_current) |
+| `shopify-dw.risk.trust_platform_tickets_summary_v1` | Tickets summary with CR ticket filtering capability | [Trust Platform Tables](./04_Data_Dictionary/Trust_Platform_Tables.md) | [Schema](./04_Data_Dictionary/Trust_Platform_Tables.md#trust_platform_tickets_summary_v1) |
+| `shopify-dw.finance.shop_gmv_current` | GMV/GPV data (aggregated per day and timeframes) | [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) | [Schema](./04_Data_Dictionary/Financial_Tables.md#shop_gmv_current) |
+| `shopify-dw.finance.shop_gmv_daily_summary_v1_1` | Detailed daily GMV data for in-depth time series analysis | [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) | [Schema](./04_Data_Dictionary/Financial_Tables.md#shop_gmv_daily_summary_v1_1) |
+| `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | GPV balance at current moment or any given date | [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) | [Schema](./04_Data_Dictionary/Financial_Tables.md#shopify_payments_balance_account_daily_cumulative_summary) |
+| `shopify-dw.raw_shopify.payments_refunds` | Comprehensive refunds data | [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) | [Schema](./04_Data_Dictionary/Financial_Tables.md#payments_refunds) |
+| `sdp-prd-cti-data.intermediate.shop_current_shopify_payments_status` | Current Shopify Payments status | [Shop Tables](./04_Data_Dictionary/Shop_Tables.md) | [Schema](./04_Data_Dictionary/Shop_Tables.md#shop_current_shopify_payments_status) |
+| `shopify-dw.money_products.order_transactions_payments_summary` | Detailed order information | [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) | [Schema](./04_Data_Dictionary/Financial_Tables.md#order_transactions_payments_summary) |
+| `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` | Merchant reserve setup and configuration | [Financial Tables](./04_Data_Dictionary/Financial_Tables.md) | [Schema](./04_Data_Dictionary/Financial_Tables.md#base__shopify_payments_reserve_configurations) |
 
-### Data Discovery Methods
+For a complete list of tables with detailed descriptions, see the [Data Dictionary](./04_Data_Dictionary/Table_Overview.md).
 
-#### Google Cloud BigQuery Console
-The primary tool for exploring and discovering datasets in Shopify's data platform.
+## Getting Started with This Repository 🚀
 
-Key Features:
-- Search across all Shopify data projects
-- View dataset schemas and metadata
-- Run queries directly against datasets
-- Check data freshness metrics
+### Access Requirements
 
-#### Shopify Metadata Portal
-Internal metadata portal for discovering analytically modeled data in the Shopify data platform.
+- **BigQuery Billing Project** - ⚠️ Important: All queries and reports must use `shopify-dw` as the billing project
+- **PII Data Access** - For sensitive data access, claim the `sdp-pii` Clouddo permit
+- **Service Accounts** - For Looker integration, submit a Helpdesk request for a Looker Service Account (requires Trust approval)
 
-Key Features:
-- Focused on analytically modeled data
-- Provides business context and definitions
-- Shows dataset ownership and support contacts
-- Links to documentation and example queries
+See the [Access and Permissions](./01_Getting_Started/Access_and_Permissions.md) guide for detailed instructions.
 
-#### Looker Studio
-For building interactive dashboards and reports from SQL queries.
+### How to Use This Knowledge Base
 
-Key Features:
-- Create interactive data visualizations
-- Schedule automated report refresh
-- Share dashboards with stakeholders
-- Integrate with BigQuery data sources
+1. **Start with onboarding** - New team members should follow the [Onboarding Checklist](./01_Getting_Started/Onboarding_Checklist.md)
+2. **Learn the tools** - Familiarize yourself with our [Tools Documentation](./02_Tools/)
+3. **Explore SQL resources** - Review the [SQL Guide](./03_SQL_Guide/) for query development best practices
+4. **Understand the data** - Browse the [Data Dictionary](./04_Data_Dictionary/) to learn about available tables
+5. **Study domain knowledge** - Explore domain-specific analysis in the [Domain Knowledge](./05_Domain_Knowledge/) section
+6. **See practical examples** - Check [Example Queries](./06_Example_Queries/) and [Case Studies](./07_Case_Studies/) for practical applications
+7. **Get support** - Use the [Team Resources](./08_Team_Resources/) section when you need help
 
-When searching for data:
-1. Start with the Metadata Portal for business-context and well-documented datasets
-2. Use BigQuery Console for technical exploration and schema information
-3. Always verify the data freshness and quality before use
+### Contributing to the Knowledge Base
 
-## Working with This Repository 🔄
+We welcome and encourage contributions from all team members! To contribute:
 
-This repository is hosted on GitHub, a platform for version control and collaboration. Here's how you can work with it using Cursor:
+1. **Clone the repository** - Create a local copy using Cursor or your preferred Git client
+2. **Create a branch** - Make your changes in a dedicated branch
+3. **Follow style guidelines** - Maintain consistent formatting and documentation patterns
+4. **Make your edits** - Add new content or improve existing documentation
+5. **Submit a pull request** - Request a review of your changes
+6. **Respond to feedback** - Make any requested adjustments
 
-### Getting Started with GitHub
+See the [Collaboration Guide](./08_Team_Resources/Collaboration_Guide.md) for detailed contribution instructions.
 
-GitHub is a platform that hosts Git repositories, allowing teams to collaborate on code. Key concepts:
-- **Repository (Repo)**: A storage location for your project containing all files and revision history
-- **Clone**: Creating a local copy of a repository on your computer
-- **Commit**: Saving changes to files in your local repository
-- **Push**: Uploading committed changes to the remote repository
-- **Pull**: Downloading changes from the remote repository to your local copy
-- **Branch**: A parallel version of the repository for making changes without affecting the main project
+## SQL Best Practices 📝
 
-### Cloning the Repository with Cursor
-
-1. **Install Cursor**: Download and install Cursor from [cursor.sh](https://cursor.sh) if you haven't already
-2. **Open Cursor**: Launch the Cursor application
-3. **Clone Repository**:
-   - Click on "File" → "Clone Repository" or use the keyboard shortcut (Cmd+Shift+P on Mac, Ctrl+Shift+P on Windows) and type "Clone Repository"
-   - Enter the repository URL: `https://github.com/your-org/CR_sql_library.git`
-   - Choose a location on your computer to save the repository
-
-### Making Changes
-
-1. **Open the Repository**:
-   - In Cursor, navigate to "File" → "Open Folder" and select the cloned repository folder
-   
-2. **Make Changes**:
-   - Navigate to the file you want to edit in the file explorer panel
-   - Make your edits to the file
-   - Save your changes (Cmd+S on Mac, Ctrl+S on Windows)
-
-3. **Commit Your Changes**:
-   - Click on the Source Control icon in the sidebar (or press Cmd+Shift+G on Mac, Ctrl+Shift+G on Windows)
-   - Review your changes
-   - Enter a meaningful commit message describing what you changed
-   - Click "Commit" to save your changes locally
-
-4. **Push Your Changes**:
-   - After committing, click "Push" to send your changes to the GitHub repository
-   - If this is your first time pushing, you may need to authenticate with GitHub
-
-### Query Versioning Guidelines
-
-When contributing new queries or updating existing ones, follow these versioning guidelines:
-
-1. **Add a version comment at the top of each query:**
-   ```sql
-   -- Version: 1.2
-   -- Last validated: 2023-07-15
-   -- Updated by: [Your Name]
-   ```
-
-2. **Increment the version number when:**
-   - Making significant changes to query logic
-   - Updating to use newer table versions
-   - Changing filter conditions or aggregation logic
-
-3. **Document all changes in the query comments**
-
-## Best Practices 📝
+For detailed SQL best practices, see the [SQL Best Practices](./03_SQL_Guide/SQL_Best_Practices.md) guide. Key highlights:
 
 - Always use the recommended data tables for consistency
 - Document any data limitations or caveats
@@ -176,238 +135,9 @@ When contributing new queries or updating existing ones, follow these versioning
 - Use `shopify-dw` as the billing project for all queries
 - Follow Shopify data handling guidelines for PII data
 
-## SQL Query Performance Optimization 🚀
-
-Optimizing SQL queries is crucial for efficient analysis, especially when working with large datasets:
-
-### General Optimization Tips
-
-1. **Select Only Needed Columns**
-   ```sql
-   -- Good: Only select what you need
-   SELECT shop_id, transaction_date, amount_usd
-   FROM transactions
-   
-   -- Avoid: Selecting everything
-   SELECT *
-   FROM transactions
-   ```
-
-2. **Use Appropriate Filters**
-   - Always add date filters to limit data volume
-   - Filter on partitioned columns when possible
-   - Push filters to the earliest stage of your query
-
-3. **Optimize JOIN Operations**
-   - Join on indexed/partitioned columns
-   - Filter tables before joining them
-   - Use appropriate join types (INNER vs LEFT)
-
-4. **Use Partitioning Effectively**
-   ```sql
-   -- Efficient: Uses partition pruning
-   SELECT *
-   FROM `shopify-dw.money_products.chargebacks_summary`
-   WHERE provider_chargeback_created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
-   ```
-
-5. **Leverage CTEs for Complex Logic**
-   - Break down complex queries into manageable CTEs
-   - Avoid deeply nested subqueries
-   - Use CTEs to improve readability and maintainability
-
-### BigQuery-Specific Optimizations
-
-1. **Use Approximate Aggregations for Large Datasets**
-   ```sql
-   -- Fast approximate count of distinct shops
-   SELECT APPROX_COUNT_DISTINCT(shop_id) as shop_count
-   FROM `shopify-dw.finance.shop_gmv_current`
-   ```
-
-2. **Leverage BigQuery's Cache**
-   - Identical queries within 24 hours use cached results
-   - Use query parameters to maximize cache hits
-
-3. **Monitor Query Cost**
-   - Check query size before running (in the BigQuery UI)
-   - Use `--dry_run` flag to estimate bytes processed
-   - Consider materializing frequently used subqueries
-
-## Cross-Functional Analysis Templates 🔄
-
-These templates demonstrate how to combine Credit Risk data with other business domains for comprehensive analysis:
-
-### Risk and Revenue Analysis
-
-```sql
--- Template: Combining risk signals with revenue metrics
--- Version: 1.0
--- Last validated: 2023-07-15
-
-WITH shop_risk AS (
-  SELECT
-    shop_id,
-    risk_score,
-    chargeback_rate_30d,
-    fraud_rate_30d
-  FROM
-    `sdp-prd-cti-data.merchant.shop_risk_indicators`
-  WHERE
-    snapshot_date = CURRENT_DATE()
-),
-
-shop_revenue AS (
-  SELECT
-    shop_id,
-    SUM(amount_usd) as total_revenue_90d
-  FROM
-    `sdp-prd-cti-data.finance.revenue_transactions`
-  WHERE
-    transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
-  GROUP BY
-    shop_id
-)
-
-SELECT
-  r.shop_id,
-  r.risk_score,
-  r.chargeback_rate_30d,
-  r.fraud_rate_30d,
-  v.total_revenue_90d,
-  SAFE_DIVIDE(r.chargeback_rate_30d * v.total_revenue_90d, 100) as estimated_chargeback_loss
-FROM
-  shop_risk r
-JOIN
-  shop_revenue v ON r.shop_id = v.shop_id
-ORDER BY
-  estimated_chargeback_loss DESC
-```
-
-### Merchant Growth and Risk Correlation
-
-```sql
--- Template: Analyzing merchant growth patterns against risk indicators
--- Version: 1.0
--- Last validated: 2023-07-15
-
-WITH merchant_gmv AS (
-  SELECT
-    shop_id,
-    gmv_usd_l30d,
-    gmv_usd_l90d,
-    gmv_usd_l365d,
-    SAFE_DIVIDE(gmv_usd_l30d, 30) as daily_gmv_current,
-    SAFE_DIVIDE(gmv_usd_l90d - gmv_usd_l30d, 60) as daily_gmv_previous
-  FROM
-    `shopify-dw.finance.shop_gmv_current`
-),
-
-merchant_risk AS (
-  SELECT
-    shop_id,
-    risk_score,
-    chargeback_rate_30d
-  FROM
-    `sdp-prd-cti-data.merchant.shop_risk_indicators`
-  WHERE
-    snapshot_date = CURRENT_DATE()
-)
-
-SELECT
-  g.shop_id,
-  g.gmv_usd_l30d,
-  g.gmv_usd_l90d,
-  r.risk_score,
-  r.chargeback_rate_30d,
-  g.daily_gmv_current,
-  g.daily_gmv_previous,
-  SAFE_DIVIDE(g.daily_gmv_current - g.daily_gmv_previous, g.daily_gmv_previous) as gmv_growth_rate,
-  CASE
-    WHEN SAFE_DIVIDE(g.daily_gmv_current - g.daily_gmv_previous, g.daily_gmv_previous) > 0.5 AND r.risk_score > 0.7
-    THEN 'High Growth, High Risk'
-    WHEN SAFE_DIVIDE(g.daily_gmv_current - g.daily_gmv_previous, g.daily_gmv_previous) > 0.5
-    THEN 'High Growth, Normal Risk'
-    WHEN r.risk_score > 0.7
-    THEN 'Low Growth, High Risk'
-    ELSE 'Normal Profile'
-  END as merchant_profile
-FROM
-  merchant_gmv g
-JOIN
-  merchant_risk r ON g.shop_id = r.shop_id
-WHERE
-  g.gmv_usd_l90d > 10000  -- Focus on merchants with meaningful GMV
-ORDER BY
-  gmv_growth_rate DESC
-```
-
-## Standard Query Template 📄
-
-Use this template as a starting point for new queries to maintain consistency:
-
-```sql
--- Title: [Brief Description of Query Purpose]
--- Version: 1.0
--- Last validated: YYYY-MM-DD
--- Author: [Your Name]
--- Description: [Detailed explanation of what this query analyzes and its business context]
--- Caveats: [Any limitations, edge cases, or considerations when using this query]
-
--- Constants or parameters (if applicable)
-DECLARE shop_id_param INT64 DEFAULT 12345;
-DECLARE lookback_days INT64 DEFAULT 90;
-
--- Main query
-WITH base_data AS (
-  -- First logical step of the analysis
-  SELECT
-    shop_id,
-    transaction_date,
-    amount_usd
-  FROM
-    `project.dataset.table`
-  WHERE
-    -- Always include date filters to limit data volume
-    transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL lookback_days DAY)
-    -- Additional filters as needed
-),
-
-aggregated_data AS (
-  -- Second logical step with aggregations
-  SELECT
-    shop_id,
-    DATE_TRUNC(transaction_date, MONTH) as month,
-    SUM(amount_usd) as monthly_total
-  FROM
-    base_data
-  GROUP BY
-    shop_id, month
-)
-
--- Final output with business logic
-SELECT
-  a.shop_id,
-  a.month,
-  a.monthly_total,
-  -- Additional calculated fields
-  LAG(a.monthly_total) OVER (PARTITION BY a.shop_id ORDER BY a.month) as previous_month,
-  SAFE_DIVIDE(
-    a.monthly_total - LAG(a.monthly_total) OVER (PARTITION BY a.shop_id ORDER BY a.month),
-    LAG(a.monthly_total) OVER (PARTITION BY a.shop_id ORDER BY a.month)
-  ) as month_over_month_growth
-FROM
-  aggregated_data a
-WHERE
-  -- Additional filters on the aggregated data
-  a.shop_id = shop_id_param
-ORDER BY
-  a.month DESC
-```
-
 ## Frequently Asked Questions ❓
 
-### General Questions
+For a complete list of FAQs, see the [Troubleshooting Guide](./08_Team_Resources/Troubleshooting_Guide.md). Common questions:
 
 **Q: How do I get access to the tables mentioned in this repository?**  
 A: Access to BigQuery tables requires appropriate permissions. Use Clouddo to request access to the `shopify-dw` project and specific datasets like `sdp-pii` for sensitive data.
@@ -415,27 +145,8 @@ A: Access to BigQuery tables requires appropriate permissions. Use Clouddo to re
 **Q: How often are these queries updated?**  
 A: We aim to validate and update queries quarterly. Each query includes a "Last validated" date to indicate when it was last checked.
 
-**Q: Can I use these queries in production systems?**  
-A: These queries are primarily designed for analysis and reporting. For production systems, additional optimization and error handling may be required.
-
-### Technical Questions
-
-**Q: Why do some of my queries timeout in BigQuery?**  
-A: Queries processing large volumes of data may timeout. Try limiting your date range, adding more specific filters, or optimizing your query using the techniques in the "SQL Query Performance Optimization" section.
-
-**Q: How do I handle NULL values in my analysis?**  
-A: Use `COALESCE()` or `IFNULL()` functions to substitute NULL values. For calculations, utilize `SAFE_DIVIDE()` instead of the division operator to avoid errors.
-
 **Q: How can I verify my chargeback rate calculations are correct?**  
 A: Compare your results with the standard tables like `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current`. Chargeback rates should divide the count of chargebacks by the count of transactions (not the monetary amounts).
-
-### Business Questions
-
-**Q: What's a normal chargeback rate for Shopify merchants?**  
-A: Chargeback rates vary significantly by industry. Generally, rates below 0.5% are considered healthy, 0.5-1% warrant attention, and rates above 1% are concerning. Use industry benchmarks for more specific guidance.
-
-**Q: How do I identify high-risk merchants most efficiently?**  
-A: Combine multiple risk signals including chargeback rates, velocity changes, and Trust Battery scores. The `shop_risk_indicators` table provides consolidated risk metrics.
 
 **Q: What's the difference between GMV and GPV in the context of risk analysis?**  
 A: Gross Merchandise Value (GMV) represents the total sales value of merchandise sold, while Gross Payment Volume (GPV) represents the portion processed through Shopify Payments. For risk analysis, GPV is often more relevant as it represents financial exposure.
@@ -446,4 +157,4 @@ A: Gross Merchandise Value (GMV) represents the total sales value of merchandise
 
 *For questions or suggestions about this repository, please contact the Credit Risk Data Team.*
 
-*Last Updated: July 2023*
+*Last Updated: May 2024*

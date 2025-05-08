@@ -14,28 +14,6 @@ This guide provides comprehensive information on using AI chat and assistance to
 - [Limitations and Considerations](#limitations-and-considerations)
 - [Recommended Tools](#recommended-tools)
 
-## Overview of AI Tools
-
-AI tools available to the Credit Risk team include:
-
-1. **Large Language Models (LLMs)**
-   - Help analyze data and generate SQL
-   - Explain complex concepts
-   - Draft documentation and reports
-   - Troubleshoot issues in code or queries
-
-2. **SQL AI Assistants**
-   - Generate SQL queries based on natural language descriptions
-   - Explain existing SQL code
-   - Optimize query performance
-   - Suggest improvements to existing queries
-
-3. **Data Analysis AI Tools**
-   - Identify patterns in data
-   - Suggest visualization approaches
-   - Generate insights from analysis results
-   - Help interpret complex metrics
-
 ## When to Use AI Tools
 
 | Scenario | AI Tool Value | Examples |
@@ -69,17 +47,17 @@ AI tools available to the Credit Risk team include:
 ### Prompt Structure Best Practices
 
 1. **Context Setting**
-   ```
+   ```markdown
    I'm a Credit Risk analyst at Shopify analyzing merchant chargeback patterns. I'm using BigQuery to query these tables: [LIST TABLES]. I need to...
    ```
 
 2. **Clear Objective**
-   ```
+   ```markdown
    Generate a SQL query that calculates the 30-day, 60-day, and 90-day chargeback rates for merchants with over $10,000 in GPV.
    ```
 
 3. **Constraints and Requirements**
-   ```
+   ```markdown
    The query must:
    - Use CTEs for readability
    - Filter out test accounts
@@ -88,7 +66,7 @@ AI tools available to the Credit Risk team include:
    ```
 
 4. **Example Format or Structure**
-   ```
+   ```markdown
    Format the output as:
    - First CTE should handle GPV calculation
    - Second CTE should handle chargeback counts
@@ -96,7 +74,7 @@ AI tools available to the Credit Risk team include:
    ```
 
 5. **Level of Detail Needed**
-   ```
+   ```markdown
    Please include detailed comments explaining each step, particularly the window function logic.
    ```
 
@@ -121,7 +99,7 @@ AI tools available to the Credit Risk team include:
 
 ### Example 1: Chargeback Analysis Query
 
-```
+```sql
 I need a SQL query for BigQuery to analyze chargeback patterns for high-risk merchants. 
 
 Tables available:
@@ -141,7 +119,7 @@ Please include comments explaining key logic.
 
 ### Example 2: Reserve Recommendation Logic
 
-```
+```markdown
 I'm working on documentation for our reserve recommendation process. Can you help me explain the logic for calculating appropriate reserve levels based on merchant risk factors?
 
 Key inputs to consider:
@@ -162,12 +140,11 @@ The audience is new Credit Risk team members who understand basic risk concepts 
 
 ### Example 3: SQL Troubleshooting
 
-```
+```sql
 I'm getting an error in this chargeback analysis query. Can you help identify the issue?
 
 ERROR: Division by zero: SAFE_DIVIDE(SUM(cb_amount_usd_30d), SUM(gpv_usd_30d))
 
-```sql
 WITH shop_metrics AS (
   SELECT
     shop_id,
@@ -193,14 +170,13 @@ GROUP BY 1, 2, 3, 4
 HAVING cb_count_30d > 0
 ORDER BY cb_rate_30d DESC
 LIMIT 100
-```
 
 I need to fix this error and ensure proper handling of potential zero values.
 ```
 
 ### Example 4: Data Exploration Guidance
 
-```
+```markdown
 I'm exploring our chargeback and fraud data to identify new risk indicators. I have access to:
 
 - Full chargeback history (reason codes, amounts, timing)
@@ -213,7 +189,7 @@ What are some non-obvious data patterns or relationships I should look for that 
 
 ### Example 5: Documentation Template
 
-```
+```markdown
 I need to create documentation for the table `sdp-prd-cti-data.intermediate.trust_platform_shop_risk_attributes_daily`.
 
 The table contains daily shop risk metrics including:
@@ -295,12 +271,14 @@ Hemingway helps you:
 ### Example: Before and After Hemingway
 
 **Before:**
-```
+
+```markdown
 The utilization of the chargeback analysis methodology that has been implemented by our team enables the identification of merchants that might potentially be exhibiting characteristics that could be indicative of elevated risk profiles based on a multitude of factors including, but not limited to, transaction patterns, chargeback frequencies, and various other metrics that have been determined to be of significance.
 ```
 
 **After:**
-```
+
+```markdown
 Our chargeback analysis method identifies high-risk merchants based on transaction patterns, chargeback frequencies, and other key metrics.
 ```
 

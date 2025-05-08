@@ -75,31 +75,14 @@ For a complete list of tables with detailed descriptions, see the [Data Dictiona
 
 For detailed SQL best practices, see the [SQL Best Practices](./02_SQL_Guide/SQL_Best_Practices.md) guide. Key highlights:
 
-- Always use the recommended data tables for consistency
 - Document any data limitations or caveats
 - Include comments in complex queries
 - Test queries before adding them to the repository
 - Use `shopify-dw` as the billing project for all queries
 - Follow Shopify data handling guidelines for PII data
 
-## Frequently Asked Questions ❓
-
-Common questions:
-
-**Q: How do I get access to the tables mentioned in this repository?**  
-A: Access to BigQuery tables requires appropriate permissions. Use Clouddo to request access to the `shopify-dw` project and specific datasets like `sdp-pii` for sensitive data.
-
-**Q: How often are these queries updated?**  
-A: We aim to validate and update queries quarterly. Each query includes a "Last validated" date to indicate when it was last checked.
-
-**Q: How can I verify my chargeback rate calculations are correct?**  
-A: Compare your results with the standard tables like `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current`. Chargeback rates should divide the count of chargebacks by the count of transactions (not the monetary amounts).
-
-**Q: What's the difference between GMV and GPV in the context of risk analysis?**  
-A: Gross Merchandise Value (GMV) represents the total sales value of merchandise sold, while Gross Payment Volume (GPV) represents the portion processed through Shopify Payments. For risk analysis, GPV is often more relevant as it represents financial exposure.
-
 ---
 
 **Happy data exploring!** 📈 💻
 
-*For questions or suggestions about this repository, please contact the Credit Risk Data Team.*
+*For questions or suggestions about this repository, please contact the Credit Risk Team.*

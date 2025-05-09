@@ -29,7 +29,7 @@ Financial tables contain transaction data, GMV/GPV metrics, merchant balances, r
 ### shopify-dw.finance.shop_gmv_current
 
 **Description**:  
-This table provides current Gross Merchandise Value (GMV) and Gross Payment Volume (GPV) metrics for shops across different time windows (1-day, 7-day, 28-day). It's used to assess the recent volume and financial activity of merchants.
+This table provides current Gross Merchandise Value (GMV) and Gross Payment Volume (GPV) metrics for shops across different time windows. It's used to assess the recent volume and financial activity of merchants.
 
 **Update Frequency**: Daily
 

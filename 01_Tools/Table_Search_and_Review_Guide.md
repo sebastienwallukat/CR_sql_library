@@ -30,7 +30,7 @@ This guide will help you leverage these tools efficiently for Credit Risk analys
 Plex is Shopify's primary data catalog and discovery platform that helps you:
 
 1. **Access Plex**
-   - Navigate to [plex.shopify.io](https://plex.shopify.io)
+   - Navigate to [plex.shopify.io](https://console.cloud.google.com/dataplex/search?project=shopify-dw)
    - Sign in with your Shopify credentials
 
 2. **Search for Data**

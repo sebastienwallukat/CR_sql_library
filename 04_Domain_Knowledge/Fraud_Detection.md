@@ -6,7 +6,7 @@ Fraud detection is a critical component of credit risk management. This page pro
 ## Datasets
 The following datasets contain fraud-related information:
 
-- `shopify-dw.risk.trust_platform_tickets_summary` - Tickets for fraud cases and investigations
+- `shopify-dw.risk.trust_platform_tickets_summary_v1` - Tickets for fraud cases and investigations
 - `shopify-dw.risk.shop_terminations_history` - History of shop terminations with reasons
 - `shopify-dw.money_products.chargebacks_summary` - Disputes and chargebacks with fraud-related reason codes
 - `shopify-dw.risk.shop_loss_metrics_daily_summary` - Shop loss metrics for trust reporting
@@ -23,11 +23,10 @@ SELECT
   COUNT(DISTINCT subjectable_id) AS unique_entities,
   AVG(time_to_first_action) AS avg_time_to_action_minutes
 FROM
-  `shopify-dw.risk.trust_platform_tickets_summary`
+  `shopify-dw.risk.trust_platform_tickets_summary_v1`
 WHERE
   created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
   AND latest_report_group = 'fraud'
-  AND status = 'closed'
 GROUP BY
   fraud_type, source
 ORDER BY
@@ -44,7 +43,7 @@ SELECT
   MAX(time_to_first_action) AS max_minutes_to_detection,
   APPROX_QUANTILES(time_to_first_action, 100)[OFFSET(50)] AS median_minutes_to_detection
 FROM
-  `shopify-dw.risk.trust_platform_tickets_summary`
+  `shopify-dw.risk.trust_platform_tickets_summary_v1`
 WHERE
   created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY)
   AND latest_report_group = 'fraud'

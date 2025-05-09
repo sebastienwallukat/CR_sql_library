@@ -184,7 +184,6 @@ ORDER BY
 
 ## Notes and Best Practices 📝
 
-- Always use `shopify-dw.money_products.shopify_payments_reserve_configurations_v1` as the primary source for reserve data
 - Pay careful attention to TIMESTAMP fields and use appropriate comparison functions:
   - Use `DATE(created_at)` when comparing with DATE values like `CURRENT_DATE()`
   - Use `TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL X DAY)` when comparing with TIMESTAMP values
@@ -192,7 +191,6 @@ ORDER BY
 - Account for seasonality when measuring reserve impact on processing volumes
 - Correlate reserve changes with risk indicators to assess effectiveness
 - Consider both the reserve rate and minimum amount when analyzing merchant impact
-- When setting up new reserves, use historical data to model potential impact on merchant cash flow
 
 Feel free to contribute new queries or improve the existing ones. Together, we can build a comprehensive resource for reserve analysis and strategy optimization.
 

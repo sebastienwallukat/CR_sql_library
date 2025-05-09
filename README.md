@@ -17,7 +17,7 @@ This knowledge base is designed to:
 - [BigQuery Guide](./01_Tools/BigQuery_Guide.md) - Complete guide to using BigQuery for credit risk analysis
 - [Table Search and Review Guide](./01_Tools/Table_Search_and_Review_Guide.md) - How to find and review tables using Plex and Metadata Portal
 - [SQL Helper Guide](./01_Tools/SQL_Helper_Guide.md) - Guide to SQL Helper tool for query assistance
-- [AI Chat Tools](./01_Tools/AI_Chat_Tools.md) - When and how to use AI tools for data analysis
+- [AI Chat Tools](./01_Tools/AI_Chat_Tools.md) - When to use AI assistants and how to craft effective prompts for SQL optimization and data analysis
 
 ### SQL Resources
 - [SQL Basics](./02_SQL_Guide/SQL_Basics.md) - Introduction to SQL structure and syntax

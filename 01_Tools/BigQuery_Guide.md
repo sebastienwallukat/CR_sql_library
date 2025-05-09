@@ -13,6 +13,7 @@ This guide provides practical instructions for using Google BigQuery for credit 
 
 # Example query
 query = """
+-- High Chargeback Rate Merchants in Last 30 Days
 SELECT shop_id, COUNT(*) as chargeback_count
 FROM `shopify-dw.money_products.chargebacks_summary`
 WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
@@ -66,12 +67,16 @@ LIMIT 100
 
 ### Query Organization Best Practices
 
-1. Start with a comment describing the query's purpose
-3. Use Common Table Expressions (CTEs) for modular structure
-4. Follow consistent indentation
-5. Use meaningful alias names
-6. Include appropriate filters and limits
-7. Include partition column filters (e.g., _extracted_at)
+1. Start with a comment describing the query's purpose and validation date
+2. Use Common Table Expressions (CTEs) for modular structure
+3. Follow consistent indentation
+4. Use meaningful alias names
+5. Include appropriate filters and limits
+6. Include partition column filters (e.g., _extracted_at)
+7. Use correct date/time functions based on column types:
+   - TIMESTAMP_SUB() with DAY intervals for timestamp columns
+   - DATE_SUB() for date columns or when using DATE() conversion
+   - Avoid using MONTH/YEAR intervals with TIMESTAMP_SUB()
 
 ## Essential BigQuery Functions for Credit Risk
 
@@ -88,13 +93,21 @@ WHERE date_field >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 -- Converting TIMESTAMP to DATE for comparison
 WHERE DATE(timestamp_column) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 
--- Month-to-date metrics for TIMESTAMP columns
+-- Month-to-date metrics for TIMESTAMP columns 
+-- NOTE: TIMESTAMP_SUB does not support MONTH date part with TIMESTAMP type
+-- Use one of these approaches instead:
+
+-- Option 1: DATE_TRUNC with current month
 WHERE DATE_TRUNC(order_transaction_created_at, MONTH) = DATE_TRUNC(CURRENT_TIMESTAMP(), MONTH)
 
+-- Option 2: Using DAY intervals as a workaround for months
+WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30*3 DAY) -- Approximately 3 months
+
 -- Year-over-year comparison for TIMESTAMP columns
+-- NOTE: Be careful with TIMESTAMP_SUB and MONTH intervals
 WHERE (
-  (order_transaction_created_at >= TIMESTAMP_TRUNC(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR), MONTH) 
-   AND order_transaction_created_at < TIMESTAMP_ADD(TIMESTAMP_TRUNC(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR), MONTH), INTERVAL 1 MONTH))
+  (order_transaction_created_at >= TIMESTAMP_TRUNC(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY), MONTH) 
+   AND order_transaction_created_at < TIMESTAMP_ADD(TIMESTAMP_TRUNC(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY), MONTH), INTERVAL 30 DAY))
   OR
   (order_transaction_created_at >= TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), MONTH) 
    AND order_transaction_created_at < CURRENT_TIMESTAMP())
@@ -272,7 +285,7 @@ SELECT
   SUM(amount_local) AS total_amount,
   COUNT(DISTINCT shop_id) AS active_merchants
 FROM `shopify-dw.money_products.order_transactions_payments_summary`
-WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 12 MONTH)
+WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 12*30 DAY)  -- Use DAY intervals with multiplier instead of MONTH with TIMESTAMP_SUB
   AND _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY)
 GROUP BY month
 ORDER BY month
@@ -371,6 +384,31 @@ FROM your_query_logic
   WHERE DATE(timestamp_column) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   ```
 
+### "TIMESTAMP_SUB does not support the MONTH date part" Error
+
+**Cause**: Attempting to use MONTH, YEAR, or other non-supported intervals with TIMESTAMP_SUB on TIMESTAMP columns
+**Solutions**:
+1. Use DAY intervals with multipliers instead:
+   ```sql
+   -- INCORRECT: Will generate error
+   WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 3 MONTH)
+   
+   -- CORRECT: Use days instead (30*3 = ~3 months)
+   WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30*3 DAY)
+   ```
+
+2. Use TIMESTAMP_TRUNC with appropriate INTERVAL:
+   ```sql
+   -- For beginning of month 3 months ago
+   WHERE created_at >= TIMESTAMP_TRUNC(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY), MONTH)
+   ```
+
+3. Convert to DATE type if appropriate:
+   ```sql
+   -- If you only need date-level granularity
+   WHERE DATE(created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 3 MONTH)
+   ```
+
 ### "Partitioned table requires filter" Error
 
 **Cause**: Missing filter on partitioned column (_extracted_at)
@@ -384,8 +422,10 @@ WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY)
 1. **Always use `shopify-dw` billing project**
 2. **Include partition column filters on all queries** (usually _extracted_at)
 3. **Use appropriate date/time functions for column types**
-   - TIMESTAMP_SUB() for timestamp columns
-   - DATE_SUB() for date columns
+   - TIMESTAMP_SUB() for timestamp columns with supported intervals (DAY, HOUR, MINUTE, SECOND)
+   - DATE_SUB() for date columns (supports all intervals including MONTH, YEAR)
+   - Never use MONTH, YEAR intervals with TIMESTAMP_SUB()
+   - Use DATE() conversion if you need to use MONTH, YEAR intervals with timestamp columns
 4. **Document all queries with comments and last validation date**
 5. **Verify results against standard tables**
 6. **Follow PII data handling guidelines**
@@ -395,12 +435,22 @@ WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY)
 
 ### Temporal Fields Reference
 
-| Field Name | Data Type | Comparison Function | Example |
-|------------|-----------|---------------------|---------|
-| order_transaction_created_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` |
-| provider_chargeback_created_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` |
-| _extracted_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY)` |
-| date (when using DATE()) | DATE | DATE_SUB() | `WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)` |
+| Field Name | Data Type | Comparison Function | Example | Notes |
+|------------|-----------|---------------------|---------|-------|
+| order_transaction_created_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` | Supports DAY, HOUR, MINUTE, SECOND intervals only. For MONTH intervals, use alternative approaches. |
+| provider_chargeback_created_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` | Supports DAY, HOUR, MINUTE, SECOND intervals only. For MONTH intervals, use alternative approaches. |
+| _extracted_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 365 DAY)` | Partition column - always include in queries. |
+| Date fields (when using DATE()) | DATE | DATE_SUB() | `WHERE DATE(timestamp_field) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)` | Supports all intervals including MONTH, YEAR. |
+| Date-only fields | DATE | DATE_SUB() | `WHERE date_field >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)` | Native DATE fields support all interval types. |
+
+### Alternative Approaches for Month/Year-based Filtering on TIMESTAMP Fields
+
+| Need | Approach | Example |
+|------|----------|---------|
+| Filter for last N months | Use DAY intervals | `WHERE field >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30*N DAY)` |
+| Filter for specific month | Use TIMESTAMP_TRUNC | `WHERE TIMESTAMP_TRUNC(field, MONTH) = TIMESTAMP_TRUNC(TIMESTAMP '2023-06-01', MONTH)` |
+| Month-to-date comparison | Use DATE_TRUNC | `WHERE DATE_TRUNC(field, MONTH) = DATE_TRUNC(CURRENT_TIMESTAMP(), MONTH)` |
+| Year-over-year | Convert to DATE if appropriate | `WHERE DATE(field) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND DATE_SUB(CURRENT_DATE(), INTERVAL 364 DAY)` |
 
 ## Additional Resources
 
@@ -416,6 +466,6 @@ For more information on using SQL effectively for credit risk analysis:
 - [SQL Basics Guide](../02_SQL_Guide/SQL_Basics.md)
 - [Common SQL Patterns](../02_SQL_Guide/Common_SQL_Patterns.md)
 - [Table Relationships](../03_Data_Dictionary/Table_Relationships.md)
-- Internal Shopify BigQuery documentation on [internal-docs.shopify.io](https://internal-docs.shopify.io)
+
 
 ---

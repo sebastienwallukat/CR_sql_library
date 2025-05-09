@@ -118,6 +118,64 @@ WHERE gmv_usd > 1000
 ORDER BY volume_ratio DESC
 ```
 
+### shopify-dw.intermediate.shop_gmv_daily_summary_v1_1
+
+**Description**:  
+This table contains a shop-level daily rollup of GMV (in USD), gross orders with GMV, and net orders with GMV. It provides detailed time series data for monitoring merchant sales activity and trends.
+
+**Update Frequency**: Daily
+
+**Primary Keys**: `shop_id`, `date`
+
+**Schema**:
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `shop_id` | INTEGER | ID of the shop with the transaction |
+| `date` | DATE | Date of the transaction |
+| `gmv_usd` | NUMERIC | GMV amount (in USD) of the transaction |
+| `gross_orders_with_gmv` | INTEGER | Sum of 1 for the first transaction with positive GMV on an order, 0 otherwise |
+| `net_orders_with_gmv` | INTEGER | Sum of 1 for transactions that take total GMV from ≤0 to >0, -1 for transactions that take GMV from >0 to ≤0 |
+| `gmv_usd_l7d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 7 day amount (in USD) |
+| `gross_orders_with_gmv_l7d` | INTEGER | Gross orders with GMV rolling 7 day amount |
+| `net_orders_with_gmv_l7d` | INTEGER | Net orders with GMV rolling 7 day amount |
+| `gmv_usd_l28d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 28 day amount (in USD) |
+| `gross_orders_with_gmv_l28d` | INTEGER | Gross orders with GMV rolling 28 day amount |
+| `net_orders_with_gmv_l28d` | INTEGER | Net orders with GMV rolling 28 day amount |
+| `gmv_usd_l30d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 30 day amount (in USD) |
+| `gross_orders_with_gmv_l30d` | INTEGER | Gross orders with GMV rolling 30 day amount |
+| `net_orders_with_gmv_l30d` | INTEGER | Net orders with GMV rolling 30 day amount |
+| `gmv_usd_l90d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 90 day amount (in USD) |
+| `gross_orders_with_gmv_l90d` | INTEGER | Gross orders with GMV rolling 90 day amount |
+| `net_orders_with_gmv_l90d` | INTEGER | Net orders with GMV rolling 90 day amount |
+| `gmv_usd_l180d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 180 day amount (in USD) |
+| `gross_orders_with_gmv_l180d` | INTEGER | Gross orders with GMV rolling 180 day amount |
+| `net_orders_with_gmv_l180d` | INTEGER | Net orders with GMV rolling 180 day amount |
+| `gmv_usd_l365d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 365 day amount (in USD) |
+| `gross_orders_with_gmv_l365d` | INTEGER | Gross orders with GMV rolling 365 day amount |
+| `net_orders_with_gmv_l365d` | INTEGER | Net orders with GMV rolling 365 day amount |
+
+**Usage Notes**:
+- Only contains records for dates on which a shop has 1+ transaction in the previous 365 days with non-zero GMV
+- Attempts to only publish data for "complete" days where both upstreams have reported a complete day of transactions
+- For the most recent data by shop, check out the `shop_gmv_current` model
+- The table is partitioned by `date` and clustered by `shop_id` for query performance
+
+**Example Query**:
+```sql
+-- Get monthly GMV for a specific shop
+SELECT
+  DATE_TRUNC(date, MONTH) as reported_month,
+  SUM(gmv_usd) AS gmv_usd
+FROM
+  `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1`
+WHERE
+  shop_id = 2939277
+  AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
+GROUP BY 1
+ORDER BY 1 DESC
+```
+
 ### shopify-dw.money_products.order_transactions_payments_summary
 
 **Description**:  
@@ -284,42 +342,40 @@ GROUP BY account_type
 ORDER BY reserve_count DESC
 ```
 
-### shopify-dw.raw_shopify.payments_refunds
+### shopify-dw.base.base__payments_refunds
 
 **Description**:  
-Contains detailed information about refund transactions, providing insights into refund patterns and potential risk indicators.
+Contains detailed information about payment refund transactions, providing insights into refund patterns and potential risk indicators.
 
 **Update Frequency**: Daily
 
-**Primary Keys**: `id`
+**Primary Keys**: `payments_refund_id`
 
 **Foreign Keys**:
 - `shop_id` references `shopify-dw.shopify.shops.id` 
-- `order_id` references `shopify-dw.shopify.orders.id`
-- `transaction_id` references transaction records
+- `order_transaction_id` references order transaction records
 
 **Schema**:
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `id` | INTEGER | Unique identifier for the refund |
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `order_id` | INTEGER | Order ID associated with this refund |
-| `transaction_id` | STRING | Transaction ID for the refund |
-| `created_at` | TIMESTAMP | When the refund was created |
-| `processed_at` | TIMESTAMP | When the refund was processed |
-| `amount` | FLOAT | Refund amount |
-| `currency` | STRING | Refund currency |
-| `gateway` | STRING | Payment gateway used |
-| `reason` | STRING | Reason for the refund |
-| `status` | STRING | Refund status |
-| `restock` | BOOLEAN | Whether items were restocked |
+| `payments_refund_id` | INTEGER | The natural key identifier of the payment refund transaction |
+| `refund_id` | STRING | The refund ID of the payment refund transaction |
+| `provider_refund_id` | STRING | The refund ID of the payment refund transaction from the provider |
+| `payments_account_id` | INTEGER | The shopify payments account ID associated with the payment refund transaction |
+| `order_transaction_id` | INTEGER | The natural key identifier of the order transaction associated with this payment refund |
+| `shopify_payments_provider_account_id` | INTEGER | The identifier of the Shopify Payments provider account associated with the payment charge |
+| `created_at` | TIMESTAMP | The timestamp when the payment refund transaction was created |
+| `shop_id` | INTEGER | The shop ID associated with the payment refund transaction |
+| `kind` | STRING | The kind of payment charge transaction |
+| `status` | STRING | The status of the payment charge transaction |
 
 **Usage Notes**:
 - High refund rates can be a risk indicator
 - Use this table to calculate refund ratios and identify unusual patterns
 - Join with order/transaction tables to correlate with other metrics
-- Always include date filters for performance optimization
+- Excludes deleted and test payments refunds
+- The table contains one row per payment refund transaction
 
 **Example Query**:
 ```sql
@@ -338,25 +394,22 @@ WITH transactions AS (
 refunds AS (
   SELECT 
     shop_id,
-    SUM(amount) AS refund_amount,
     COUNT(*) AS refund_count
-  FROM `shopify-dw.raw_shopify.payments_refunds`
+  FROM `shopify-dw.base.base__payments_refunds`
   WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+    AND status = 'success'
   GROUP BY shop_id
 )
 
 SELECT 
   t.shop_id,
-  t.total_amount,
   t.transaction_count,
-  r.refund_amount,
   r.refund_count,
-  SAFE_DIVIDE(r.refund_amount, t.total_amount) AS refund_amount_ratio,
   SAFE_DIVIDE(r.refund_count, t.transaction_count) AS refund_count_ratio
 FROM transactions t
 LEFT JOIN refunds r ON t.shop_id = r.shop_id
 WHERE t.transaction_count >= 50
-ORDER BY refund_amount_ratio DESC
+ORDER BY refund_count_ratio DESC
 LIMIT 100
 ```
 
@@ -566,7 +619,7 @@ refunds AS (
     order_id,
     amount AS refund_amount,
     created_at AS refund_date
-  FROM `shopify-dw.raw_shopify.payments_refunds`
+  FROM `shopify-dw.base.base__payments_refunds`
   WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
 )
 

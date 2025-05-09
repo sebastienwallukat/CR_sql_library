@@ -17,7 +17,7 @@ This knowledge base is designed to:
 - [BigQuery Guide](./01_Tools/BigQuery_Guide.md) - Complete guide to using BigQuery for credit risk analysis
 - [Table Search and Review Guide](./01_Tools/Table_Search_and_Review_Guide.md) - How to find and review tables using Plex and Metadata Portal
 - [SQL Helper Guide](./01_Tools/SQL_Helper_Guide.md) - Guide to SQL Helper tool for query assistance
-- [AI Chat Tools](./01_Tools/AI_Chat_Tools.md) - When to use AI assistants and how to craft effective prompts for SQL optimization and data analysis
+- [AI Chat Tools](./01_Tools/AI_Chat_Tools.md) - When to use AI assistants and how to craft effective prompts
 
 ### SQL Resources
 - [SQL Basics](./02_SQL_Guide/SQL_Basics.md) - Introduction to SQL structure and syntax
@@ -55,19 +55,19 @@ This knowledge base is designed to:
 
 These tables are most commonly used in Credit Risk queries and reports:
 
-| Table Name | Description | Location | Documentation |
-|------------|-------------|----------|--------------|
-| `shopify-dw.money_products.chargebacks_summary` | Comprehensive chargebacks summary data | [Chargeback Tables](./03_Data_Dictionary/Chargeback_Tables.md) | [Schema](./03_Data_Dictionary/Chargeback_Tables.md#chargebacks_summary) |
-| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | Chargeback count/rate at any given date | [Chargeback Tables](./03_Data_Dictionary/Chargeback_Tables.md) | [Schema](./03_Data_Dictionary/Chargeback_Tables.md#shop_chargeback_rates_daily_snapshot) |
-| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` | Current chargeback rates | [Chargeback Tables](./03_Data_Dictionary/Chargeback_Tables.md) | [Schema](./03_Data_Dictionary/Chargeback_Tables.md#shop_chargeback_rates_current) |
-| `shopify-dw.risk.trust_platform_tickets_summary_v1` | Tickets summary with CR ticket filtering capability | [Trust Platform Tables](./03_Data_Dictionary/Trust_Platform_Tables.md) | [Schema](./03_Data_Dictionary/Trust_Platform_Tables.md#trust_platform_tickets_summary_v1) |
-| `shopify-dw.finance.shop_gmv_current` | GMV/GPV data (aggregated per day and timeframes) | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#shop_gmv_current) |
-| `shopify-dw.finance.shop_gmv_daily_summary_v1_1` | Detailed daily GMV data for in-depth time series analysis | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#shop_gmv_daily_summary_v1_1) |
-| `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | GPV balance at current moment or any given date | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#shopify_payments_balance_account_daily_cumulative_summary) |
-| `shopify-dw.raw_shopify.payments_refunds` | Comprehensive refunds data | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#payments_refunds) |
-| `sdp-prd-cti-data.intermediate.shop_current_shopify_payments_status` | Current Shopify Payments status | [Shop Tables](./03_Data_Dictionary/Shop_Tables.md) | [Schema](./03_Data_Dictionary/Shop_Tables.md#shop_current_shopify_payments_status) |
-| `shopify-dw.money_products.order_transactions_payments_summary` | Detailed order information | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#order_transactions_payments_summary) |
-| `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` | Merchant reserve setup and configuration | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#base__shopify_payments_reserve_configurations) |
+| Table Name | Description | Location | Documentation | Data Type |
+|------------|-------------|----------|--------------|-----------|
+| `shopify-dw.money_products.chargebacks_summary` | Comprehensive chargebacks summary data | [Chargeback Tables](./03_Data_Dictionary/Chargeback_Tables.md) | [Schema](./03_Data_Dictionary/Chargeback_Tables.md#chargebacks_summary) | TIMESTAMP |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | Chargeback count/rate at any given date | [Chargeback Tables](./03_Data_Dictionary/Chargeback_Tables.md) | [Schema](./03_Data_Dictionary/Chargeback_Tables.md#shop_chargeback_rates_daily_snapshot) | DATE |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` | Current chargeback rates | [Chargeback Tables](./03_Data_Dictionary/Chargeback_Tables.md) | [Schema](./03_Data_Dictionary/Chargeback_Tables.md#shop_chargeback_rates_current) | DATE |
+| `shopify-dw.risk.trust_platform_tickets_summary_v1` | Tickets summary with CR ticket filtering capability | [Trust Platform Tables](./03_Data_Dictionary/Trust_Platform_Tables.md) | [Schema](./03_Data_Dictionary/Trust_Platform_Tables.md#trust_platform_tickets_summary_v1) | TIMESTAMP |
+| `shopify-dw.finance.shop_gmv_current` | GMV/GPV data (aggregated per day and timeframes) | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#shop_gmv_current) | DATE |
+| `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` | Detailed daily GMV data for in-depth time series analysis | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#shop_gmv_daily_summary_v1_1) | DATE |
+| `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | GPV balance at current moment or any given date | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#shopify_payments_balance_account_daily_cumulative_summary) | DATE |
+| `shopify-dw.base.base__payments_refunds` | Comprehensive refunds data | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#base__payments_refunds) | TIMESTAMP |
+| `sdp-prd-cti-data.intermediate.shop_current_shopify_payments_status` | Current Shopify Payments status | [Shop Tables](./03_Data_Dictionary/Shop_Tables.md) | [Schema](./03_Data_Dictionary/Shop_Tables.md#shop_current_shopify_payments_status) | TIMESTAMP |
+| `shopify-dw.money_products.order_transactions_payments_summary` | Detailed order information | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#order_transactions_payments_summary) | TIMESTAMP |
+| `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` | Merchant reserve setup and configuration | [Financial Tables](./03_Data_Dictionary/Financial_Tables.md) | [Schema](./03_Data_Dictionary/Financial_Tables.md#base__shopify_payments_reserve_configurations) | TIMESTAMP |
 
 For a complete list of tables with detailed descriptions, see the [Data Dictionary](./03_Data_Dictionary/Table_Overview.md).
 
@@ -86,3 +86,5 @@ For detailed SQL best practices, see the [SQL Best Practices](./02_SQL_Guide/SQL
 **Happy data exploring!** 📈 💻
 
 *For questions or suggestions about this repository, please contact the Credit Risk Team.*
+
+*Last validated with MCP: 2023-05-07*

@@ -728,7 +728,7 @@ daily_processing AS (
     shop_id,
     date,
     gpv
-  FROM `shopify-dw.finance.shop_gmv_daily_summary_v1_1`
+  FROM `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1`
   WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     AND currency = 'USD'
 ),

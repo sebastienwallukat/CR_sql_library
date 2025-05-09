@@ -36,7 +36,7 @@ This guide provides comprehensive information on using AI chat and assistance to
 
 ### When Not to Use AI Tools
 
-1. **Critical financial decisions**: Never rely solely on AI for setting reserve levels
+1. **Critical financial decisions**: Never rely solely on AI 
 2. **Sensitive data handling**: Avoid sharing PII or sensitive merchant information
 3. **Final verification**: Always manually verify generated queries before using in production
 4. **Compliance matters**: Don't rely on AI for compliance or regulatory interpretations
@@ -357,11 +357,5 @@ Cursor is a code editor similar to VS Code but with integrated AI capabilities t
 | **Hemingway** | Documentation clarity and readability | https://chat.shopify.io/ (select Hemingway agent) | ✅ Approved |
 | **Cursor** | AI-assisted code editing | Install via Okta | ✅ Approved |
 
-### Access and Permissions
-
-To access Shopify-approved AI tools:
-1. For SQLHelper: Access through https://sql-helper.shopify.io/
-2. For Hemingway: Access through https://chat.shopify.io/ and select the Hemingway agent
-3. For Cursor: Install via Okta
 
 ---

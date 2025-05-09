@@ -598,3 +598,177 @@ BigQuery performance optimization is critical for both query speed and cost effi
 - [BigQuery Documentation](https://cloud.google.com/bigquery/docs)
 
 ---
+
+## Handling DATE and TIMESTAMP Fields
+
+### Use the Correct Temporal Functions
+
+BigQuery strictly enforces type matching between dates and timestamps. Always use the appropriate function for each field type:
+
+- **For DATE fields:**
+  ```sql
+  WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+  ```
+
+- **For TIMESTAMP fields:**
+  ```sql
+  WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+  ```
+
+### Common DATE vs TIMESTAMP Error
+
+This is the #1 error found during MCP validation:
+
+```
+No matching signature for operator >= for argument types: TIMESTAMP, DATE
+```
+
+This error occurs when you use `DATE_SUB()` with a TIMESTAMP column or `TIMESTAMP_SUB()` with a DATE column. Always match the function to the field type.
+
+### Explicit Type Conversion
+
+When you need to compare fields of different types, use explicit conversion:
+
+```sql
+-- Converting TIMESTAMP to DATE for comparison
+WHERE DATE(created_at) = CURRENT_DATE()
+
+-- Converting DATE to TIMESTAMP for comparison (beginning of day)
+WHERE TIMESTAMP(date) <= CURRENT_TIMESTAMP()
+```
+
+### Key Temporal Fields Reference
+
+| Table | Field | Type | Proper Function |
+|-------|-------|------|-----------------|
+| `shopify-dw.money_products.chargebacks_summary` | `provider_chargeback_created_at` | TIMESTAMP | `TIMESTAMP_SUB()` |
+| `shopify-dw.risk.trust_platform_tickets_summary_v1` | `created_at` | TIMESTAMP | `TIMESTAMP_SUB()` |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | `date` | DATE | `DATE_SUB()` |
+| `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` | `date` | DATE | `DATE_SUB()` |
+
+For a complete guide on handling temporal fields, see the [Date vs Timestamp Guide](./Date_vs_Timestamp_Guide.md).
+
+## Performance Optimization
+
+### Filter on Partitioned Columns
+
+BigQuery tables are often partitioned by date or timestamp fields. Always include filters on these columns:
+
+```sql
+-- Good: Filtering on the partition column
+SELECT *
+FROM `shopify-dw.money_products.chargebacks_summary` 
+WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+```
+
+### Use Clustering Columns
+
+Include filters on clustering columns when possible:
+
+```sql
+-- Good: Using both partition and clustering columns
+SELECT *
+FROM `shopify-dw.money_products.chargebacks_summary` 
+WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+  AND shop_id = 12345678
+```
+
+### Limit Query Scope
+
+- Only select the columns you need
+- Use appropriate date ranges (avoid unnecessarily wide ranges)
+- Apply filters as early as possible in your query
+- Use appropriate aggregation levels
+
+### Avoid Memory-Intensive Operations
+
+Certain operations can cause memory issues with large datasets:
+
+- `ORDER BY` without a `LIMIT`
+- `GROUP BY` on high-cardinality columns without filters
+- Joins without appropriate filters
+- `DISTINCT` on large datasets or multiple columns
+
+### Use Approximate Functions for Large-Scale Analytics
+
+For large datasets where absolute precision isn't required, use approximate functions:
+
+```sql
+-- Instead of COUNT(DISTINCT user_id) which is expensive
+SELECT APPROX_COUNT_DISTINCT(user_id) AS unique_users
+FROM `large_table`
+```
+
+## Data Quality and Validation
+
+### Null Handling
+
+- Use `COALESCE()` for null substitution
+- Use `NULLIF()` to prevent division by zero
+- Check for nulls in join columns
+
+### Money/Currency Handling
+
+- Always specify currency in column names (e.g., `amount_usd`)
+- Be explicit about exchange rates when converting currencies
+- Use `ROUND()` with appropriate decimal places for money
+
+### Testing Queries
+
+Before adding queries to the repository:
+
+1. Test with a limited data scope first
+2. Validate results against known data points
+3. Check edge cases (nulls, zeros, extreme values)
+4. Add comments explaining complex logic
+
+## Documentation and Commenting
+
+### Query Documentation
+
+Include the following in your query comments:
+
+```sql
+-- Purpose: Brief description of what the query does
+-- Notes: Any caveats, assumptions or limitations
+```
+
+### Column and Filter Documentation
+
+Add comments for non-obvious columns or filters:
+
+```sql
+SELECT
+  shop_id,
+  SUM(gpv_usd) AS total_gpv,
+  COUNT(DISTINCT order_id) AS order_count, -- Unique orders only
+  SUM(chargeback_amount_usd) / NULLIF(SUM(gpv_usd), 0) AS chargeback_rate -- Prevents division by zero
+```
+
+## Security and Privacy
+
+### PII Handling
+
+- Don't query PII fields unless absolutely necessary
+- Aggregate data to remove individual identifiers when possible
+- Anonymize or hash sensitive fields in results
+- Document why PII is needed if it must be included
+
+### Billing Project
+
+Always use `shopify-dw` as the billing project for all queries. This ensures proper cost allocation and monitoring.
+
+### Access Control
+
+- Only query data you have legitimate access to
+- Don't share query results containing sensitive data
+- Follow Shopify's data handling guidelines
+
+## Additional Tips
+
+- Use window functions for running totals and rankings
+- Leverage BigQuery's array and struct types for complex data
+- Use `EXCEPT` or `QUALIFY` for filtering with window functions
+- Cache common subqueries in CTEs for reuse
+
+---

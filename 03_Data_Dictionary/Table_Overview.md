@@ -44,7 +44,7 @@ This document provides a comprehensive overview of all data tables used by the C
 | `shopify-dw.money_products.shopify_payments_balance_transactions` | Shopify Payments balance transactions | balance_transaction_id, shop_id | Various, includes TIMESTAMP fields | Hourly |
 | `sdp-prd-cti-data.base.base__orders` | Order information including fulfillment status | order_id, shop_id | Various, includes TIMESTAMP fields | Hourly |
 | `shopify-dw.finance.currency_rate_daily_snapshot` | Currency exchange rates | currency_code, date | `currency_code` (STRING), `date` (DATE) | Daily |
-| `sdp-prd-cti-data.base.base__payments_refunds` | Payment refund information | id, shop_id | Various, includes TIMESTAMP fields | Hourly |
+| `shopify-dw.base.base__payments_refunds` | Payment refund information | payments_refund_id, shop_id | Various, includes TIMESTAMP fields | Hourly |
 
 ## Chargeback and Dispute Tables
 
@@ -78,7 +78,8 @@ Tables with financial data including exchange rates and transaction values.
 
 | Table Name | Description | Primary Keys | Data Types | Refresh Frequency | Verification Status |
 |------------|-------------|--------------|------------|-------------------|---------------------|
-| `shopify-dw.finance.shop_gmv_daily_summary` | Daily GMV/GPV metrics | shop_id, date | `shop_id` (INTEGER), `date` (DATE) | Daily | ✓ Verified |
+| `shopify-dw.finance.shop_gmv_current` | Current GMV/GPV metrics | shop_id | `shop_id` (INTEGER) | Daily | ✓ Verified |
+| `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` | Daily GMV/GPV metrics | shop_id, date | `shop_id` (INTEGER), `date` (DATE) | Daily | ✓ Verified |
 | `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | Cumulative balance account summary | shop_id, remote_account_id, date | `shop_id` (INTEGER), `remote_account_id` (STRING), `date` (DATE) | Daily | ✓ Verified |
 | `shopify-dw.mart_cti_data.shop_loss_metrics__wide` | Shop loss metrics table | shop_id, date | `shop_id` (INTEGER), `date` (DATE) | Daily | ✓ Verified |
 | `sdp-prd-cti-data.mart.detection_performance_debugger` | Detection performance metrics | ticket_id | Various, includes TIMESTAMP fields | Daily | ✓ Verified |

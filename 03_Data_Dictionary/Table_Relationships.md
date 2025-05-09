@@ -83,7 +83,7 @@ WHERE t._extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
 
 ```
 ┌───────────────────────────────┐          ┌─────────────────────────────────────┐
-│ finance.                      │          │ finance.                            │
+│ finance.                      │          │ intermediate.                        │
 │ shop_gmv_current              │          │ shop_gmv_daily_summary_v1_1         │
 │                               │          │                                     │
 │ - shop_id                     │◄─────────┤ - shop_id                           │
@@ -119,7 +119,7 @@ SELECT
   g.date,
   g.gpv,
   b.balance
-FROM `shopify-dw.finance.shop_gmv_daily_summary_v1_1` g
+FROM `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` g
 LEFT JOIN `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` b
   ON g.shop_id = b.shop_id
   AND g.date = b.date
@@ -191,9 +191,9 @@ GROUP BY s.shop_id, s.shopify_payments_status, s.account_active, c.chargeback_ra
 | Table | Purpose | Join Fields | Partition Key |
 |-------|---------|------------|--------------|
 | `shopify-dw.finance.shop_gmv_current` | Current GMV/GPV metrics | `shop_id`, `currency` | N/A (table) |
-| `shopify-dw.finance.shop_gmv_daily_summary_v1_1` | Daily GMV/GPV data | `shop_id`, `date`, `currency` | `date` |
+| `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` | Daily GMV/GPV data | `shop_id`, `date`, `currency` | `date` |
 | `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | Balance information | `shop_id`, `date`, `currency` | `date` |
-| `shopify-dw.raw_shopify.payments_refunds` | Refund data | `shop_id`, `order_id`, `order_transaction_id` | Not verified |
+| `shopify-dw.base.base__payments_refunds` | Refund data | `shop_id`, `order_transaction_id` | Not verified |
 | `shopify-dw.money_products.order_transactions_payments_summary` | Transaction data | `shop_id`, `order_id`, `order_transaction_id` | `_extracted_at` |
 
 ### Shop Domain
@@ -352,7 +352,7 @@ merchant_gpv AS (
     shop_id,
     date,
     gpv
-  FROM `shopify-dw.finance.shop_gmv_daily_summary_v1_1`
+  FROM `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1`
   WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     AND currency = 'USD'
 )
@@ -382,7 +382,7 @@ ORDER BY b.shop_id, b.date
 | `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | Daily | 1 day |
 | `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` | Daily | 1 day |
 | `shopify-dw.finance.shop_gmv_current` | Daily | 1 day |
-| `shopify-dw.finance.shop_gmv_daily_summary_v1_1` | Daily | 1 day |
+| `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` | Daily | 1 day |
 | `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | Daily | 1 day |
 | `sdp-prd-cti-data.intermediate.shop_current_shopify_payments_status` | Daily | 1 day |
 | `shopify-dw.risk.trust_platform_tickets_summary_v1` | Hourly | 1 hour |
@@ -406,7 +406,7 @@ ORDER BY b.shop_id, b.date
 | `money_products.chargebacks_summary` | `provider_chargeback_created_at` | TIMESTAMP | `WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)` |
 | `money_products.order_transactions_payments_summary` | `order_transaction_created_at` | TIMESTAMP | `WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)` |
 | `money_products.order_transactions_payments_summary` | `_extracted_at` | TIMESTAMP | `WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` |
-| `finance.shop_gmv_daily_summary_v1_1` | `date` | DATE | `WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)` |
+| `intermediate.shop_gmv_daily_summary_v1_1` | `date` | DATE | `WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)` |
 | `risk.trust_platform_tickets_summary_v1` | `created_at` | TIMESTAMP | `WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)` |
 
 ### Union Examples
@@ -431,7 +431,7 @@ WITH shop_data AS (
     shop_id,
     'Has Refunds' as category,
     COUNT(*) as count_value
-  FROM `shopify-dw.raw_shopify.payments_refunds`
+  FROM `shopify-dw.base.base__payments_refunds`
   WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
   GROUP BY shop_id
   
@@ -511,7 +511,7 @@ WITH shop_daily_data AS (
     SUM(order_count) as daily_order_count,
     SUM(gmv_usd) as daily_gmv_usd,
     SUM(gpv_usd) as daily_gpv_usd
-  FROM `shopify-dw.finance.shop_gmv_daily_summary_v1_1`
+  FROM `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1`
   WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   GROUP BY shop_id, date
 ),

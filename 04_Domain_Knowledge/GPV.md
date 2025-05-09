@@ -1,14 +1,27 @@
-# Gross Payment Volume (GPV) Analysis
+# Processing Volume Analysis (GPV)
 
 ## Introduction
 Gross Payment Volume (GPV) is a critical metric for credit risk management, representing the total transaction volume processed through Shopify Payments. Analyzing GPV patterns helps identify changes in merchant behavior, growth trends, and potential risk indicators.
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Datasets](#datasets)
+- [Common Queries](#common-queries)
+  - [Daily GPV by Merchant](#daily-gpv-by-merchant)
+  - [Monthly GPV Growth Rate](#monthly-gpv-growth-rate)
+  - [GPV vs Risk Score Correlation](#gpv-vs-risk-score-correlation)
+  - [GPV Anomaly Detection](#gpv-anomaly-detection)
+- [Best Practices](#best-practices)
+- [Temporal Field Handling](#temporal-field-handling)
+- [Key Considerations](#key-considerations-for-gpv-analysis)
+- [Related Resources](#related-resources)
 
 ## Datasets
 The following datasets contain GPV-related information:
 
 - `shopify-dw.money_products.order_transactions` - Primary source for payment processing metrics
 - `shopify-dw.money_products.order_transactions_payments_summary` - Detailed transaction data with payment information
-- `shopify-dw.money_products.banking_card_authorizations` - Payment authorization records
+- `shopify-dw.base.base__banking_card_authorizations` - Payment authorization records
 - `shopify-dw.money_products.banking_balance_transactions` - Payment capture and transaction data
 - `sdp-prd-payments.intermediate.order_risk_assessments` - Risk scores associated with transactions
 
@@ -34,6 +47,10 @@ ORDER BY
   merchant_id, transaction_day
 LIMIT 100
 ```
+
+**Description:** This query calculates the daily GPV for each merchant over the past 30 days. It filters for successful capture transactions that are included in GPV calculations. The query uses both a time filter on transaction creation date and the extracted_at field to ensure data completeness.
+
+**Example:** The results show each merchant's daily transaction volume, allowing analysts to identify sudden spikes or drops in processing volume that may indicate changes in risk profile.
 
 ### Monthly GPV Growth Rate
 ```sql
@@ -73,6 +90,10 @@ ORDER BY
 LIMIT 100
 ```
 
+**Description:** This query calculates the month-over-month GPV growth rate for each merchant over the past year. It first creates a CTE that aggregates monthly GPV values, then joins this CTE to itself to compare each month with the previous month. The growth rate is calculated as a percentage change.
+
+**Example:** The results show merchants with the highest growth rates, which can help identify rapidly growing merchants that may require additional monitoring or merchants with unusual spikes that could indicate potential issues.
+
 ### GPV vs Risk Score Correlation
 ```sql
 SELECT 
@@ -97,6 +118,10 @@ ORDER BY
   merchant_id, week
 LIMIT 100
 ```
+
+**Description:** This query correlates weekly GPV with average risk scores for each merchant over the past 90 days. It joins transaction data with risk assessment data to understand how risk scores evolve with GPV fluctuations.
+
+**Example:** The results help identify correlations between transaction volume and risk scores. For instance, merchants with increasing risk scores alongside increasing GPV may warrant closer monitoring.
 
 ### GPV Anomaly Detection
 ```sql
@@ -148,6 +173,10 @@ ORDER BY
 LIMIT 100
 ```
 
+**Description:** This query identifies anomalous daily GPV values for merchants over the past 90 days. It calculates a z-score for each day's GPV relative to the merchant's own historical average and standard deviation. Days with z-scores exceeding 3 (meaning they are 3+ standard deviations from the mean) are flagged as anomalies.
+
+**Example:** Results show merchants with unusual daily GPV patterns, including the exact date of the anomaly, the actual GPV for that day, and baseline metrics for comparison. This helps risk analysts quickly identify potential fraud or other issues requiring investigation.
+
 ## Best Practices
 
 - Always filter by `order_transaction_status = 'SUCCESS'` to ensure accurate GPV calculations
@@ -183,7 +212,7 @@ LIMIT 100
 
 - [Financial Tables Documentation](../03_Data_Dictionary/Financial_Tables.md)
 - [Chargeback Analysis](./Chargeback.md)
-- [SQL Best Practices](../02_SQL_Guide/SQL_Best_Practices.md)
-- [Shop Analysis](../05_Example_Queries/Full_Query_Shop.md)
+- [Writing Better Queries](../02_SQL_Guide/Writing_Better_Queries.md)
+- [Complete Shop Analysis](../05_Example_Queries/Complete_Shop_Analysis.md)
 
 ---

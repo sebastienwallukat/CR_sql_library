@@ -2,6 +2,24 @@
 
 Welcome to the Reserves section of our SQL Query Resource Center. This page contains datasets and queries for analyzing merchant reserve configurations and impact.
 
+## Table of Contents
+- [Introduction](#introduction)
+- [Primary Datasets](#primary-datasets)
+- [Current Reserve Configurations](#current-reserve-configurations)
+- [Reserve Configuration Changes](#reserve-configuration-changes)
+- [Reserve Rate Distribution](#reserve-rate-distribution)
+- [Correlating Reserves with Risk Indicators](#correlating-reserves-with-risk-indicators)
+- [Reserve Impact Analysis](#reserve-impact-analysis)
+- [Notes and Best Practices](#notes-and-best-practices)
+
+## Introduction
+
+Merchant reserves are financial safeguards placed on merchant accounts to mitigate risk. Shopify Payments uses two primary types of reserves:
+- **Fixed reserves**: Hold a specific monetary amount from merchant payouts
+- **Rolling reserves**: Hold a percentage of future transactions for a defined period
+
+The queries in this document help analyze reserve configurations, changes over time, and their impact on merchants.
+
 ## Primary Datasets 📁
 
 ### `shopify-dw.money_products.shopify_payments_reserve_configurations_v1`
@@ -16,9 +34,9 @@ This is the primary recommended dataset for all reserve analysis. It combines da
 | expires_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE expires_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` |
 | cancelled_at | TIMESTAMP | TIMESTAMP_SUB() | `WHERE cancelled_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` |
 
-## Common Queries 💻
+## Current Reserve Configurations
 
-### Current Reserve Configurations by Merchant
+### SQL Query
 
 ```sql
 SELECT
@@ -43,7 +61,24 @@ ORDER BY
   rolling_reserve_percentage DESC
 ```
 
-### Reserve Configuration Changes Over Time
+### Description
+
+This query identifies all current active reserve configurations across merchants. It retrieves:
+- The reserve rate (percentage of funds held)
+- Reserve type (fixed, rolling, or both)
+- Duration for which funds are held (in days)
+- Fixed reserve amount (if applicable)
+- Effective dates for the reserve configuration
+
+The query filters to only show currently active reserves by checking if the current date falls between the creation and expiration dates of the reserve.
+
+### Example
+
+The results show merchants with different reserve configurations. Each row represents a merchant with details about their reserve type, rate, and duration. This data can be used to understand the distribution of reserve rates across the merchant base and identify merchants with unusually high reserve rates.
+
+## Reserve Configuration Changes
+
+### SQL Query
 
 ```sql
 WITH reserve_changes AS (
@@ -86,7 +121,22 @@ ORDER BY
   effective_from_date DESC
 ```
 
-### Reserve Rate Distribution Analysis
+### Description
+
+This query tracks how merchant reserve configurations have changed over time. It uses the LAG window function to compare each reserve configuration with the previous one for the same merchant. Key metrics include:
+- Changes in reserve rate (percentage increase or decrease)
+- Changes in reserve type (e.g., switching from rolling to fixed)
+- The timing of these changes
+
+The query filters to only show merchants where either the reserve rate or type has changed.
+
+### Example
+
+The results show merchants where reserve configurations have changed. This allows for analysis of reserve adjustment patterns over time, identification of merchants with frequent changes, and understanding of whether reserves are typically increased or decreased.
+
+## Reserve Rate Distribution
+
+### SQL Query
 
 ```sql
 SELECT
@@ -111,7 +161,22 @@ ORDER BY
   MIN(rolling_reserve_percentage)
 ```
 
-### Correlating Reserves with Risk Indicators
+### Description
+
+This query analyzes the distribution of reserve rates across merchants by:
+- Categorizing reserve rates into predefined buckets (e.g., 1-5%, 6-10%, etc.)
+- Counting the number of merchants in each bucket
+- Calculating the percentage of total merchants in each bucket
+
+The query filters for currently active reserves and provides a clear view of how reserve rates are distributed.
+
+### Example
+
+The results show the distribution of reserve rates across all merchants with active reserves. This helps identify typical reserve rate ranges and outliers, which can inform reserve policy decisions and risk assessment strategies.
+
+## Correlating Reserves with Risk Indicators
+
+### SQL Query
 
 ```sql
 SELECT
@@ -135,7 +200,22 @@ ORDER BY
   r.rolling_reserve_percentage DESC
 ```
 
+### Description
+
+This query is designed to be extended with joins to risk indicator tables. It retrieves merchant reserve configurations that can be correlated with various risk factors from other datasets. The base query includes:
+- Reserve rate and type information
+- Reserve duration and amount
+- Effective dates
+
+To make this query useful for risk analysis, join it with relevant risk indicator tables (e.g., disputes, chargebacks, or merchant risk scores).
+
+### Example
+
+The results provide a foundation for risk analysis by showing merchant reserve configurations. When joined with risk data, this can reveal correlations between reserve rates and risk factors, helping determine if appropriate reserves have been set for merchants with specific risk profiles.
+
 ## Reserve Impact Analysis
+
+### SQL Query
 
 ```sql
 WITH merchant_before_after AS (
@@ -182,6 +262,22 @@ ORDER BY
   percent_gpv_change
 ```
 
+### Description
+
+This query template allows for analyzing the impact of reserves on merchant behavior and processing volumes. It:
+- Creates a before-and-after comparison window around when reserves were implemented
+- Calculates key metrics before and after reserve implementation
+- Determines both absolute and percentage changes in metrics
+
+The placeholder metrics (avg_daily_gpv_before/after) should be replaced with actual metrics from relevant tables, such as processing volume, transaction count, or dispute rates.
+
+### Example
+
+When properly configured with actual metrics, this query can reveal how merchant behavior changes after reserves are implemented. It can help answer questions like:
+- Does GMV/GPV decrease after reserves are applied?
+- Do merchants with higher reserve rates show different behavior patterns?
+- What is the typical business impact of implementing different reserve types?
+
 ## Notes and Best Practices 📝
 
 - Pay careful attention to TIMESTAMP fields and use appropriate comparison functions:
@@ -191,7 +287,5 @@ ORDER BY
 - Account for seasonality when measuring reserve impact on processing volumes
 - Correlate reserve changes with risk indicators to assess effectiveness
 - Consider both the reserve rate and minimum amount when analyzing merchant impact
-
-Feel free to contribute new queries or improve the existing ones. Together, we can build a comprehensive resource for reserve analysis and strategy optimization.
 
 Happy reserve analyzing! 🔍 

@@ -1,6 +1,18 @@
-# SQL Best Practices for Credit Risk Analysis
+# Writing Better Queries: SQL Best Practices for Credit Risk Analysis
 
 This guide outlines best practices for writing SQL queries for credit risk analysis at Shopify, focusing on query optimization, naming conventions, and data handling guidelines.
+
+## Table of Contents
+- [Query Structure and Organization](#query-structure-and-organization)
+- [Query Optimization for BigQuery](#query-optimization-for-bigquery)
+- [Data Handling Best Practices](#data-handling-best-practices)
+- [Documentation and Maintainability](#documentation-and-maintainability)
+- [Shopify-Specific Guidelines](#shopify-specific-guidelines)
+- [Common Pitfalls to Avoid](#common-pitfalls-to-avoid)
+- [Query Performance Optimization](#query-performance-optimization)
+- [Handling DATE and TIMESTAMP Fields](#handling-date-and-timestamp-fields)
+- [Practical Example: High-Risk Merchant Analysis](#practical-example-high-risk-merchant-analysis)
+- [Further Resources](#further-resources)
 
 ## Query Structure and Organization
 
@@ -607,17 +619,19 @@ BigQuery strictly enforces type matching between dates and timestamps. Always us
 
 - **For DATE fields:**
   ```sql
-  WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+  -- Use DATE functions with DATE fields
+  WHERE date_field >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   ```
 
 - **For TIMESTAMP fields:**
   ```sql
-  WHERE created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+  -- Use TIMESTAMP functions with TIMESTAMP fields
+  WHERE timestamp_field >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
   ```
 
 ### Common DATE vs TIMESTAMP Error
 
-This is the #1 error found during MCP validation:
+This is the #1 error found during query validation:
 
 ```
 No matching signature for operator >= for argument types: TIMESTAMP, DATE
@@ -698,6 +712,179 @@ For large datasets where absolute precision isn't required, use approximate func
 SELECT APPROX_COUNT_DISTINCT(user_id) AS unique_users
 FROM `large_table`
 ```
+
+## Data Quality and Validation
+
+### Null Handling
+
+- Use `COALESCE()` for null substitution
+- Use `NULLIF()` to prevent division by zero
+- Check for nulls in join columns
+
+### Money/Currency Handling
+
+- Always specify currency in column names (e.g., `amount_usd`)
+- Be explicit about exchange rates when converting currencies
+- Use `ROUND()` with appropriate decimal places for money
+
+### Testing Queries
+
+Before adding queries to the repository:
+
+1. Test with a limited data scope first
+2. Validate results against known data points
+3. Check edge cases (nulls, zeros, extreme values)
+4. Add comments explaining complex logic
+
+## Documentation and Commenting
+
+### Query Documentation
+
+Include the following in your query comments:
+
+```sql
+-- Purpose: Brief description of what the query does
+-- Notes: Any caveats, assumptions or limitations
+```
+
+### Column and Filter Documentation
+
+Add comments for non-obvious columns or filters:
+
+```sql
+SELECT
+  shop_id,
+  SUM(gpv_usd) AS total_gpv,
+  COUNT(DISTINCT order_id) AS order_count, -- Unique orders only
+  SUM(chargeback_amount_usd) / NULLIF(SUM(gpv_usd), 0) AS chargeback_rate -- Prevents division by zero
+```
+
+## Security and Privacy
+
+### PII Handling
+
+- Don't query PII fields unless absolutely necessary
+- Aggregate data to remove individual identifiers when possible
+- Anonymize or hash sensitive fields in results
+- Document why PII is needed if it must be included
+
+### Billing Project
+
+Always use `shopify-dw` as the billing project for all queries. This ensures proper cost allocation and monitoring.
+
+### Access Control
+
+- Only query data you have legitimate access to
+- Don't share query results containing sensitive data
+- Follow Shopify's data handling guidelines
+
+## Additional Tips
+
+- Use window functions for running totals and rankings
+- Leverage BigQuery's array and struct types for complex data
+- Use `EXCEPT` or `QUALIFY` for filtering with window functions
+- Cache common subqueries in CTEs for reuse
+
+---
+
+## Practical Example: High-Risk Merchant Analysis
+
+Below is a complete example of a query that identifies high-risk merchants based on multiple risk factors. It demonstrates many of the best practices covered in this guide:
+
+```sql
+-- Purpose: Identify high-risk merchants based on multiple risk indicators
+-- This query combines transaction patterns, chargeback data, and shop attributes
+
+WITH 
+-- Get transaction data for the last 90 days with volume and success rate
+merchant_transactions AS (
+  SELECT 
+    t.shop_id,
+    COUNT(*) AS transaction_count,
+    SUM(CASE WHEN t.order_transaction_status = 'success' THEN 1 ELSE 0 END) AS successful_count,
+    SUM(CASE WHEN t.order_transaction_status = 'success' THEN t.amount_local ELSE 0 END) AS successful_amount,
+    -- Calculate success rate
+    SAFE_DIVIDE(
+      SUM(CASE WHEN t.order_transaction_status = 'success' THEN 1 ELSE 0 END),
+      COUNT(*)
+    ) AS success_rate
+  FROM `shopify-dw.money_products.order_transactions_payments_summary` t
+  WHERE t.order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+    AND t._extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY) -- Partition filter
+  GROUP BY t.shop_id
+  -- Only consider merchants with sufficient volume
+  HAVING transaction_count >= 50
+),
+
+-- Get chargeback data for the same period
+merchant_chargebacks AS (
+  SELECT 
+    c.shop_id,
+    COUNT(*) AS chargeback_count,
+    SUM(c.chargeback_amount) AS chargeback_amount
+  FROM `shopify-dw.money_products.chargebacks_summary` c
+  WHERE c.provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+  GROUP BY c.shop_id
+),
+
+-- Get recent shop information
+shop_info AS (
+  SELECT
+    s.shop_id,
+    s.name AS shop_name,
+    s.country_code,
+    s.created_at AS shop_created_at,
+    -- Calculate shop age in days
+    DATE_DIFF(CURRENT_DATE(), DATE(s.created_at), DAY) AS shop_age_days
+  FROM `shopify-dw.accounts_and_administration.shop_profile_current` s
+)
+
+-- Final query combining all data sources
+SELECT 
+  s.shop_id,
+  s.shop_name,
+  s.country_code,
+  s.shop_age_days,
+  t.transaction_count,
+  t.successful_count,
+  t.success_rate,
+  COALESCE(c.chargeback_count, 0) AS chargeback_count,
+  -- Calculate risk metrics
+  SAFE_DIVIDE(COALESCE(c.chargeback_count, 0), t.successful_count) AS chargeback_rate,
+  CASE 
+    WHEN s.shop_age_days < 30 AND t.success_rate < 0.8 THEN 'High'
+    WHEN SAFE_DIVIDE(COALESCE(c.chargeback_count, 0), t.successful_count) > 0.01 THEN 'High'
+    WHEN s.shop_age_days < 30 AND SAFE_DIVIDE(COALESCE(c.chargeback_count, 0), t.successful_count) > 0.005 THEN 'Medium'
+    WHEN t.success_rate < 0.9 THEN 'Medium'
+    ELSE 'Low'
+  END AS risk_level
+FROM merchant_transactions t
+JOIN shop_info s ON t.shop_id = s.shop_id
+LEFT JOIN merchant_chargebacks c ON t.shop_id = c.shop_id
+-- Apply risk filters
+WHERE 
+  (s.shop_age_days < 30 AND t.success_rate < 0.9) -- New shops with lower success rates
+  OR SAFE_DIVIDE(COALESCE(c.chargeback_count, 0), t.successful_count) > 0.005 -- Shops with elevated chargeback rates
+ORDER BY 
+  CASE 
+    WHEN SAFE_DIVIDE(COALESCE(c.chargeback_count, 0), t.successful_count) > 0.01 THEN 1
+    WHEN s.shop_age_days < 30 AND t.success_rate < 0.8 THEN 2
+    ELSE 3
+  END, -- Order by risk priority
+  chargeback_rate DESC
+LIMIT 1000;
+```
+
+### Key Features of This Example
+
+1. **Well-structured CTEs**: Separates logic for transactions, chargebacks, and shop information
+2. **Proper date handling**: Uses correct TIMESTAMP functions for timestamp fields
+3. **Partition filters**: Includes _extracted_at for efficient querying
+4. **Error prevention**: Uses COALESCE and SAFE_DIVIDE to handle NULLs and division by zero
+5. **Readability**: Clear comments, consistent formatting, and logical organization
+6. **Performance**: Filters early in CTEs, uses appropriate joins, and includes LIMIT
+
+The above example would help credit risk analysts identify merchants that may require additional review based on multiple risk indicators, including chargeback rates, transaction success rates, and shop age.
 
 ## Data Quality and Validation
 

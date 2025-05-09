@@ -2,6 +2,20 @@
 
 This guide covers common SQL errors encountered during credit risk analysis, their causes, and solutions. Use this resource to diagnose and fix issues with your queries.
 
+## Table of Contents
+- [Common Error Types](#common-error-types)
+  - [1. Syntax Errors](#1-syntax-errors)
+  - [2. Name Resolution Errors](#2-name-resolution-errors)
+  - [3. Type Mismatch Errors](#3-type-mismatch-errors)
+  - [4. Resource Exceeded Errors](#4-resource-exceeded-errors)
+  - [5. Join and Aggregation Errors](#5-join-and-aggregation-errors)
+  - [6. Permissions Errors](#6-permissions-errors)
+  - [7. Data Quality Errors](#7-data-quality-errors)
+- [Performance Troubleshooting](#performance-troubleshooting)
+- [Query Validation Techniques](#query-validation-techniques)
+- [Resource Limits and Workarounds](#resource-limits-and-workarounds)
+- [Getting Help](#getting-help)
+
 ## Common Error Types
 
 ### 1. Syntax Errors
@@ -100,7 +114,7 @@ SELECT
   c.chargeback_id  -- Properly referenced from chargebacks table
 FROM `shopify-dw.money_products.order_transactions_payments_summary` t
 JOIN `shopify-dw.money_products.chargebacks_summary` c
-  ON t.transaction_id = c.order_transaction_id
+  ON t.order_transaction_id = c.order_transaction_id
 ```
 
 ### 3. Type Mismatch Errors
@@ -119,14 +133,14 @@ JOIN `shopify-dw.money_products.chargebacks_summary` c
 -- Error: Cannot coerce string 'high' to double
 SELECT 
   *
-FROM transactions
-WHERE amount > 'high'  -- Comparing number to string
+FROM `shopify-dw.money_products.order_transactions_payments_summary`
+WHERE amount_local > 'high'  -- Comparing number to string
 
 -- Fixed:
 SELECT 
   *
-FROM transactions
-WHERE amount > 1000  -- Using a numeric value
+FROM `shopify-dw.money_products.order_transactions_payments_summary`
+WHERE amount_local > 1000  -- Using a numeric value
 ```
 
 #### Error: `No matching signature for function ...`
@@ -175,13 +189,14 @@ JOIN `shopify-dw.money_products.chargebacks_summary`
 -- Fixed:
 SELECT 
   t.shop_id,
-  t.transaction_id,
+  t.order_transaction_id,
   t.amount_local,
   c.chargeback_id  -- Only selecting needed columns
 FROM `shopify-dw.money_products.order_transactions_payments_summary` t
 JOIN `shopify-dw.money_products.chargebacks_summary` c
   ON t.order_transaction_id = c.order_transaction_id  -- Proper join condition
-WHERE t.order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Timestamp filter
+WHERE t._extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Partition column filter
+  AND c.provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Partition column filter
 ```
 
 #### Error: `Query exceeded resource limits...`
@@ -212,7 +227,7 @@ SELECT
   shop_id,
   COUNT(*) as transaction_count
 FROM `shopify-dw.money_products.order_transactions_payments_summary`
-WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Added timestamp filter
+WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Added partition column filter
 GROUP BY shop_id
 ```
 
@@ -232,18 +247,18 @@ GROUP BY shop_id
 -- Error: GROUP BY expression references column shop_name which is neither grouped nor aggregated
 SELECT 
   shop_id,
-  shop_name,  -- This is not in the GROUP BY
+  shop_country_name,  -- This is not in the GROUP BY
   COUNT(*) as transaction_count
-FROM transactions
+FROM `shopify-dw.money_products.order_transactions_payments_summary`
 GROUP BY shop_id
 
 -- Fixed:
 SELECT 
   shop_id,
-  shop_name,
+  shop_country_name,
   COUNT(*) as transaction_count
-FROM transactions
-GROUP BY shop_id, shop_name  -- Added shop_name to GROUP BY
+FROM `shopify-dw.money_products.order_transactions_payments_summary`
+GROUP BY shop_id, shop_country_name  -- Added shop_country_name to GROUP BY
 ```
 
 #### Error: `Ambiguous column name ...`
@@ -263,7 +278,7 @@ SELECT
   COUNT(*) as count
 FROM `shopify-dw.money_products.order_transactions_payments_summary`
 JOIN `shopify-dw.money_products.chargebacks_summary`
-  ON transaction_id = transaction_id
+  ON order_transaction_id = order_transaction_id
 
 -- Fixed:
 SELECT 
@@ -415,7 +430,7 @@ SELECT
 FROM `shopify-dw.money_products.order_transactions_payments_summary` t
 JOIN `shopify-dw.shopify.shops` s   -- Join after filtering
   ON s.id = t.shop_id
-WHERE t.order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Timestamp filter added
+WHERE t._extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)  -- Partition column filter
 GROUP BY s.shop_id, s.shop_name
 ```
 
@@ -491,9 +506,9 @@ SELECT
   COUNT(t.order_transaction_id) as transaction_count
 FROM `shopify-dw.money_products.chargebacks_summary` c
 JOIN `shopify-dw.money_products.order_transactions_payments_summary` t
-  ON c.shop_id = t.shop_id
+  ON c.order_transaction_id = t.order_transaction_id
 WHERE c.provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
-  AND t.order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+  AND t._extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
 GROUP BY c.shop_id
 LIMIT 10
 ```
@@ -518,7 +533,8 @@ WITH my_chargeback_rates AS (
   FROM `shopify-dw.money_products.order_transactions_payments_summary` t
   LEFT JOIN `shopify-dw.money_products.chargebacks_summary` c
     ON t.order_transaction_id = c.order_transaction_id
-  WHERE t.order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+  WHERE t._extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+    AND c.provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
   GROUP BY shop_id
 )
 
@@ -569,7 +585,7 @@ SELECT
   COUNTIF(amount_local > 10000) AS large_amounts,
   COUNTIF(order_transaction_created_at > CURRENT_TIMESTAMP()) AS future_dates
 FROM `shopify-dw.money_products.order_transactions_payments_summary`
-WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
 ```
 
 ## Resource Limits and Workarounds
@@ -590,13 +606,16 @@ WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVA
 
 ```sql
 -- Instead of one large date range:
-SELECT * FROM huge_table WHERE date BETWEEN '2020-01-01' AND '2023-12-31'
+SELECT * FROM `shopify-dw.money_products.order_transactions_payments_summary` 
+WHERE _extracted_at BETWEEN '2020-01-01' AND '2023-12-31'
 
 -- Break into yearly chunks:
 -- Year 2020
-SELECT * FROM huge_table WHERE date BETWEEN '2020-01-01' AND '2020-12-31'
+SELECT * FROM `shopify-dw.money_products.order_transactions_payments_summary` 
+WHERE _extracted_at BETWEEN '2020-01-01' AND '2020-12-31'
 -- Year 2021
-SELECT * FROM huge_table WHERE date BETWEEN '2021-01-01' AND '2021-12-31'
+SELECT * FROM `shopify-dw.money_products.order_transactions_payments_summary` 
+WHERE _extracted_at BETWEEN '2021-01-01' AND '2021-12-31'
 -- etc.
 ```
 
@@ -626,7 +645,7 @@ SELECT
   shop_id,
   COUNT(*) AS transaction_count
 FROM `shopify-dw.money_products.order_transactions_payments_summary`
-WHERE order_transaction_created_at >= start_date AND order_transaction_created_at < end_date
+WHERE _extracted_at >= start_date AND _extracted_at < end_date
 GROUP BY shop_id
 ```
 
@@ -646,6 +665,7 @@ SELECT
   order_transaction_created_at,
   order_transaction_status
 FROM `shopify-dw.money_products.order_transactions_payments_summary`
+WHERE _extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
 ```
 
 ## Getting Help

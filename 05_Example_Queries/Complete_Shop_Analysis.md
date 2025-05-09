@@ -1,6 +1,12 @@
-# Full Query - Shop 🏪
+# Complete Shop Analysis
 
-Welcome to the Full Query - Shop section of our SQL Query Resource Center. This page contains comprehensive end-to-end queries for shop analysis, combining multiple data sources.
+Welcome to the Complete Shop Analysis section of our SQL Query Resource Center. This page contains comprehensive end-to-end queries for shop analysis, combining multiple data sources.
+
+## Table of Contents
+- [Comprehensive Shop Risk Profile](#comprehensive-shop-risk-profile)
+- [Shop Risk Comparison with Industry Peers](#shop-risk-comparison-with-industry-peers)
+- [Shop Activity Timeline](#shop-activity-timeline)
+- [Notes and Best Practices](#notes-and-best-practices-)
 
 ## Comprehensive Shop Risk Profile
 
@@ -124,17 +130,18 @@ shop_risk_indicators AS (
 shop_reserves AS (
   SELECT
     r.merchant_id as shop_id,
-    r.reserve_rate,
-    r.reserve_type,
-    r.rolling_window_days,
-    r.minimum_reserve_amount_usd,
-    r.effective_from_date,
-    r.effective_to_date
+    r.rolling_reserve_percentage as reserve_rate,
+    'rolling' as reserve_type,
+    r.hold_duration as rolling_window_days,
+    r.fixed_reserve_amount as minimum_reserve_amount_usd,
+    r.created_at as effective_from_date,
+    r.expires_at as effective_to_date
   FROM
-    `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` r
+    `shopify-dw.money_products.shopify_payments_reserve_configurations_v1` r
   WHERE
     r.merchant_id = 12345
-    AND CURRENT_DATE() BETWEEN r.effective_from_date AND COALESCE(r.effective_to_date, '9999-12-31')
+    AND r.is_active = TRUE
+    AND CURRENT_DATE() BETWEEN DATE(r.created_at) AND COALESCE(DATE(r.expires_at), '9999-12-31')
 )
 
 SELECT
@@ -304,6 +311,8 @@ ORDER BY
 - The key tables for shop analysis are:
   - `shopify-dw.mart_core_operate.identity_account_shop_summary_current` - Primary shop information
   - `shopify-dw.risk.trust_platform_tickets_summary_v1` - Ticket information
+  - `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` - Chargeback data
+  - `shopify-dw.money_products.shopify_payments_reserve_configurations_v1` - Reserve information
 - Adjust date ranges based on the shop's age and processing history
 - Always use the recommended tables for tickets (`shopify-dw.risk.trust_platform_*`)
 

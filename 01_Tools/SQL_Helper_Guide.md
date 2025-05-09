@@ -266,7 +266,7 @@ If you need assistance with SQL Helper:
 1. Check the internal documentation
 2. Ask in the `#credit-risk-data` Slack channel
 3. Contact the Data Platform team
-4. Refer to the [SQL Best Practices](../02_SQL_Guide/SQL_Best_Practices.md) guide
+4. Refer to the [Writing Better Queries](../02_SQL_Guide/Writing_Better_Queries.md) guide
 
 ## Additional Resources
 
@@ -274,7 +274,7 @@ For more robust SQL support, consider:
 
 1. Using pre-built queries from the [Example Queries](../05_Example_Queries/) section
 2. Reviewing the [Common SQL Patterns](../02_SQL_Guide/Common_SQL_Patterns.md) guide
-3. Referring to the [BigQuery Guide](./BigQuery_Guide.md) 
-4. Refer to the [SQL Best Practices](../02_SQL_Guide/SQL_Best_Practices.md) guide
+3. Referring to the [BigQuery for Risk Analysis](./BigQuery_for_Risk_Analysis.md) 
+4. Refer to the [Writing Better Queries](../02_SQL_Guide/Writing_Better_Queries.md) guide
 
 ---

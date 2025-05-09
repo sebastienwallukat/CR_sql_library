@@ -2,6 +2,24 @@
 
 This document provides comprehensive information about financial tables used for credit risk analysis at Shopify.
 
+## Table of Contents
+- [Overview](#overview)
+- [Primary Tables](#primary-tables)
+  - [shop_gmv_current](#shopify-dwfinanceshop_gmv_current)
+  - [shop_gmv_daily_summary_v1](#shopify-dwfinanceshop_gmv_daily_summary_v1)
+  - [shop_gmv_daily_summary_v1_1](#shopify-dwintermediateshop_gmv_daily_summary_v1_1)
+  - [order_transactions_payments_summary](#shopify-dwmoney_productsorder_transactions_payments_summary)
+  - [shopify_payments_balance_account_daily_cumulative_summary](#shopify-dwmoney_productsshopify_payments_balance_account_daily_cumulative_summary)
+  - [base__shopify_payments_reserve_configurations](#sdp-prd-cti-databasebase__shopify_payments_reserve_configurations)
+  - [base__payments_refunds](#shopify-dwbasebase__payments_refunds)
+- [Secondary Tables](#secondary-tables)
+  - [shopify_payments_disputes](#shopify-dwmoney_productsshopify_payments_disputes)
+  - [shop_gpv_daily_summary_v1](#shopify-dwfinanceshop_gpv_daily_summary_v1)
+  - [shopify_payments_transfers](#shopify-dwmoney_productsshopify_payments_transfers)
+- [How to Join Financial Tables](#how-to-join-financial-tables)
+- [Data Quality Considerations](#data-quality-considerations)
+- [Common Analysis Patterns](#common-analysis-patterns)
+
 ## Overview
 
 Financial tables contain transaction data, GMV/GPV metrics, merchant balances, reserve configurations, and other financial indicators crucial for credit risk assessment. These tables form the foundation for analyzing merchant financial activity and risk exposure.
@@ -17,24 +35,6 @@ This table provides current Gross Merchandise Value (GMV) and Gross Payment Volu
 
 **Primary Keys**: `shop_id`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `gmv_usd` | NUMERIC | Gross Merchandise Value (in USD) |
-| `gpv_usd` | NUMERIC | Gross Payment Volume (in USD) |
-| `gross_orders_with_gmv` | INTEGER | Number of orders with GMV |
-| `net_orders_with_gmv` | INTEGER | Net number of orders with GMV |
-| `gmv_usd_l7d` | NUMERIC | Gross Merchandise Value over the past 7 days (in USD) |
-| `gpv_usd_l7d` | NUMERIC | Gross Payment Volume over the past 7 days (in USD) |
-| `gross_orders_with_gmv_l7d` | INTEGER | Number of orders with GMV over the past 7 days |
-| `net_orders_with_gmv_l7d` | INTEGER | Net number of orders with GMV over the past 7 days |
-| `gmv_usd_l28d` | NUMERIC | Gross Merchandise Value over the past 28 days (in USD) |
-| `gpv_usd_l28d` | NUMERIC | Gross Payment Volume over the past 28 days (in USD) |
-| `gross_orders_with_gmv_l28d` | INTEGER | Number of orders with GMV over the past 28 days |
-| `net_orders_with_gmv_l28d` | INTEGER | Net number of orders with GMV over the past 28 days |
-| `first_order_with_gmv_date` | DATE | Date of first order with GMV |
 
 **Usage Notes**:
 - Primary table for understanding current merchant processing volume
@@ -65,21 +65,6 @@ This table provides daily GMV and order data for each shop, allowing for detaile
 
 **Primary Keys**: `shop_id`, `date`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `date` | DATE | The date of the metrics |
-| `gmv_usd` | NUMERIC | Gross Merchandise Value for the day (in USD) |
-| `gross_orders_with_gmv` | INTEGER | Number of orders with GMV for the day |
-| `net_orders_with_gmv` | INTEGER | Net number of orders with GMV for the day |
-| `gmv_usd_l7d` | NUMERIC | Gross Merchandise Value over the past 7 days (in USD) |
-| `gross_orders_with_gmv_l7d` | INTEGER | Number of orders with GMV over the past 7 days |
-| `net_orders_with_gmv_l7d` | INTEGER | Net number of orders with GMV over the past 7 days |
-| `gmv_usd_l28d` | NUMERIC | Gross Merchandise Value over the past 28 days (in USD) |
-| `gross_orders_with_gmv_l28d` | INTEGER | Number of orders with GMV over the past 28 days |
-| `net_orders_with_gmv_l28d` | INTEGER | Net number of orders with GMV over the past 28 days |
 
 **Usage Notes**:
 - Essential for time series analysis of merchant activity
@@ -127,33 +112,6 @@ This table contains a shop-level daily rollup of GMV (in USD), gross orders with
 
 **Primary Keys**: `shop_id`, `date`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `shop_id` | INTEGER | ID of the shop with the transaction |
-| `date` | DATE | Date of the transaction |
-| `gmv_usd` | NUMERIC | GMV amount (in USD) of the transaction |
-| `gross_orders_with_gmv` | INTEGER | Sum of 1 for the first transaction with positive GMV on an order, 0 otherwise |
-| `net_orders_with_gmv` | INTEGER | Sum of 1 for transactions that take total GMV from ≤0 to >0, -1 for transactions that take GMV from >0 to ≤0 |
-| `gmv_usd_l7d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 7 day amount (in USD) |
-| `gross_orders_with_gmv_l7d` | INTEGER | Gross orders with GMV rolling 7 day amount |
-| `net_orders_with_gmv_l7d` | INTEGER | Net orders with GMV rolling 7 day amount |
-| `gmv_usd_l28d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 28 day amount (in USD) |
-| `gross_orders_with_gmv_l28d` | INTEGER | Gross orders with GMV rolling 28 day amount |
-| `net_orders_with_gmv_l28d` | INTEGER | Net orders with GMV rolling 28 day amount |
-| `gmv_usd_l30d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 30 day amount (in USD) |
-| `gross_orders_with_gmv_l30d` | INTEGER | Gross orders with GMV rolling 30 day amount |
-| `net_orders_with_gmv_l30d` | INTEGER | Net orders with GMV rolling 30 day amount |
-| `gmv_usd_l90d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 90 day amount (in USD) |
-| `gross_orders_with_gmv_l90d` | INTEGER | Gross orders with GMV rolling 90 day amount |
-| `net_orders_with_gmv_l90d` | INTEGER | Net orders with GMV rolling 90 day amount |
-| `gmv_usd_l180d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 180 day amount (in USD) |
-| `gross_orders_with_gmv_l180d` | INTEGER | Gross orders with GMV rolling 180 day amount |
-| `net_orders_with_gmv_l180d` | INTEGER | Net orders with GMV rolling 180 day amount |
-| `gmv_usd_l365d` | NUMERIC | Gross Merchandise Volume (GMV) rolling 365 day amount (in USD) |
-| `gross_orders_with_gmv_l365d` | INTEGER | Gross orders with GMV rolling 365 day amount |
-| `net_orders_with_gmv_l365d` | INTEGER | Net orders with GMV rolling 365 day amount |
 
 **Usage Notes**:
 - Only contains records for dates on which a shop has 1+ transaction in the previous 365 days with non-zero GMV
@@ -189,24 +147,6 @@ Comprehensive table with detailed information about each payment transaction. Th
 - `shop_id` references `shopify-dw.shopify.shops.id`
 - `order_id` references `shopify-dw.shopify.orders.id`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `order_transaction_id` | INTEGER | Unique identifier for the transaction |
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `order_id` | INTEGER | Order ID associated with this transaction |
-| `order_transaction_created_at` | TIMESTAMP | When the transaction was created |
-| `order_transaction_processed_at` | TIMESTAMP | When the transaction was processed |
-| `order_transaction_status` | STRING | Transaction status (success, failure, pending, etc.) |
-| `payment_details_type` | STRING | Payment method used (credit_card, paypal, etc.) |
-| `payment_gateway_integration_name` | STRING | Payment gateway used |
-| `amount_local` | NUMERIC | Transaction amount in local currency |
-| `currency_code_local` | STRING | Transaction currency |
-| `is_shopify_payments_gateway` | BOOLEAN | Whether transaction used Shopify Payments |
-| `card_type` | STRING | Card brand (Visa, Mastercard, etc.) |
-| `card_country_code` | STRING | Country code of the issuing bank |
-| `order_transaction_kind` | STRING | Transaction kind (authorization, capture, sale, etc.) |
 
 **Usage Notes**:
 - This table has data from 2018-01-01 onwards
@@ -241,27 +181,13 @@ This table provides daily snapshots of merchant balance accounts, showing the cu
 
 **Primary Keys**: `remote_account_id`, `currency_code`, `date`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `remote_account_id` | STRING | Identifier for the Shopify Payments provider account |
-| `provider_name` | STRING | Payment provider name (e.g., stripe, paypal) |
-| `currency_code` | STRING | Currency of the balance |
-| `date` | DATE | The date of the balance snapshot |
-| `cumulative_net_local_sum` | NUMERIC | Cumulative balance amount in local currency |
-| `cumulative_net_usd_sum` | NUMERIC | Cumulative balance amount in USD |
-| `day_reserve_local` | NUMERIC | Portion of balance held in reserve (local currency) |
-| `day_reserve_usd` | NUMERIC | Portion of balance held in reserve (USD) |
-| `is_latest_date` | BOOLEAN | Whether this is the most recent date in the dataset |
 
 **Usage Notes**:
 - Use this table to monitor merchant balances over time
 - Understand the impact of reserves on merchant liquidity
 - Track changes in financial position
 - Balances are cumulative as of the end of each day
-- Join with `intermediate.shopify_payments_provider_accounts` to get additional shop information
+- Join with `money_products.shopify_payments_provider_accounts` to get additional shop information
 - Use `is_latest_date = TRUE` to get the most recent snapshot
 
 **Example Query**:
@@ -269,14 +195,14 @@ This table provides daily snapshots of merchant balance accounts, showing the cu
 -- Calculate balance-to-GPV ratios to assess financial cushion
 WITH daily_balances AS (
   SELECT 
-    s.shop_id,
+    sppa.shop_id,
     s.date,
     s.currency_code,
     s.cumulative_net_local_sum AS balance,
     s.day_reserve_local AS reserved_balance,
     g.gmv_usd
   FROM `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` s
-  LEFT JOIN `shopify-dw.intermediate.shopify_payments_provider_accounts` sppa
+  LEFT JOIN `shopify-dw.money_products.shopify_payments_provider_accounts` sppa
     ON s.remote_account_id = sppa.remote_account_id
   LEFT JOIN `shopify-dw.finance.shop_gmv_daily_summary_v1` g
     ON sppa.shop_id = g.shop_id
@@ -307,19 +233,6 @@ Contains information about reserve configurations applied to merchant accounts. 
 
 **Primary Keys**: `shop_id`, `account_id`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `account_id` | INTEGER | Account ID associated with the reserve |
-| `account_type` | STRING | Type of account |
-| `is_active` | BOOLEAN | Whether the reserve is currently active |
-| `reserve_hold_duration` | NUMERIC | Number of days funds are held in reserve |
-| `reserve_percentage` | NUMERIC | Reserve percentage |
-| `reserve_created_at` | TIMESTAMP | When the reserve was created |
-| `reserve_expires_at` | TIMESTAMP | When the reserve expires |
-| `reserve_cancelled_at` | TIMESTAMP | When the reserve was cancelled, if applicable |
 
 **Usage Notes**:
 - Critical table for understanding risk controls applied to merchants
@@ -355,20 +268,6 @@ Contains detailed information about payment refund transactions, providing insig
 - `shop_id` references `shopify-dw.shopify.shops.id` 
 - `order_transaction_id` references order transaction records
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `payments_refund_id` | INTEGER | The natural key identifier of the payment refund transaction |
-| `refund_id` | STRING | The refund ID of the payment refund transaction |
-| `provider_refund_id` | STRING | The refund ID of the payment refund transaction from the provider |
-| `payments_account_id` | INTEGER | The shopify payments account ID associated with the payment refund transaction |
-| `order_transaction_id` | INTEGER | The natural key identifier of the order transaction associated with this payment refund |
-| `shopify_payments_provider_account_id` | INTEGER | The identifier of the Shopify Payments provider account associated with the payment charge |
-| `created_at` | TIMESTAMP | The timestamp when the payment refund transaction was created |
-| `shop_id` | INTEGER | The shop ID associated with the payment refund transaction |
-| `kind` | STRING | The kind of payment charge transaction |
-| `status` | STRING | The status of the payment charge transaction |
 
 **Usage Notes**:
 - High refund rates can be a risk indicator
@@ -428,22 +327,6 @@ Contains information about payment disputes, including chargebacks and inquiries
 - `shop_id` references `shopify-dw.shopify.shops.id`
 - `order_id` references `shopify-dw.shopify.orders.id`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | STRING | Unique identifier for the dispute |
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `order_id` | INTEGER | Order ID associated with this dispute |
-| `amount` | NUMERIC | Disputed amount |
-| `currency` | STRING | Currency of the dispute |
-| `reason` | STRING | Reason for the dispute |
-| `status` | STRING | Current status of the dispute |
-| `evidence_due_by` | TIMESTAMP | Deadline for evidence submission |
-| `evidence_sent_on` | TIMESTAMP | When evidence was submitted |
-| `finalized_on` | TIMESTAMP | When the dispute was finalized |
-| `created_at` | TIMESTAMP | When the dispute was created |
-| `updated_at` | TIMESTAMP | When the dispute was last updated |
 
 **Usage Notes**:
 - Provides detailed dispute information
@@ -476,16 +359,6 @@ Provides daily aggregated GPV data, providing detailed time series analysis of p
 
 **Primary Keys**: `shop_id`, `date`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `date` | DATE | The date of the metrics |
-| `gpv_usd` | NUMERIC | Gross Payment Volume for the day (in USD) |
-| `gpv_usd_l7d` | NUMERIC | Gross Payment Volume over the past 7 days (in USD) |
-| `gpv_usd_l28d` | NUMERIC | Gross Payment Volume over the past 28 days (in USD) |
-| `gpv_usd_l30d` | NUMERIC | Gross Payment Volume over the past 30 days (in USD) |
 
 **Usage Notes**:
 - Provides a daily view of payment processing activity
@@ -530,19 +403,6 @@ Contains information about money transfers (payouts) to merchants, tracking when
 
 **Foreign Keys**: `shop_id` references `shopify-dw.shopify.shops.id`
 
-**Schema**:
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | STRING | Unique identifier for the transfer |
-| `shop_id` | INTEGER | Unique identifier for a shop |
-| `amount` | NUMERIC | Transfer amount |
-| `currency` | STRING | Transfer currency |
-| `type` | STRING | Type of transfer (payout, charge, etc.) |
-| `status` | STRING | Status of the transfer |
-| `created_at` | TIMESTAMP | When the transfer was created |
-| `arrival_date` | DATE | Expected arrival date |
-| `failure_code` | STRING | Reason for failure (if applicable) |
 
 **Usage Notes**:
 - Track merchant payout frequency and amounts
@@ -652,7 +512,7 @@ SELECT
   r.reserve_hold_duration,
   s.day_reserve_local / NULLIF(s.cumulative_net_local_sum, 0) AS reserved_ratio
 FROM `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` s
-JOIN `shopify-dw.intermediate.shopify_payments_provider_accounts` sppa
+JOIN `shopify-dw.money_products.shopify_payments_provider_accounts` sppa
   ON s.remote_account_id = sppa.remote_account_id
 JOIN `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` r
   ON sppa.shop_id = r.shop_id
@@ -713,7 +573,7 @@ balance_metrics AS (
     s.cumulative_net_local_sum - s.day_reserve_local AS available_balance,
     s.day_reserve_local / NULLIF(s.cumulative_net_local_sum, 0) AS reserve_ratio
   FROM `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` s
-  JOIN `shopify-dw.intermediate.shopify_payments_provider_accounts` sppa
+  JOIN `shopify-dw.money_products.shopify_payments_provider_accounts` sppa
     ON s.remote_account_id = sppa.remote_account_id
   WHERE s.date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
     AND s.currency_code = 'USD'
@@ -811,7 +671,7 @@ reserve_data AS (
       sppa.shop_id,
       s.day_reserve_local
     FROM `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` s
-    JOIN `shopify-dw.intermediate.shopify_payments_provider_accounts` sppa
+    JOIN `shopify-dw.money_products.shopify_payments_provider_accounts` sppa
       ON s.remote_account_id = sppa.remote_account_id
     WHERE s.date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
       AND s.currency_code = 'USD'
@@ -832,5 +692,3 @@ LEFT JOIN chargeback_exposure c ON r.shop_id = c.shop_id
 WHERE c.chargeback_amount > 0
 ORDER BY exposure_to_reserve_ratio DESC
 ```
-
----

@@ -2,22 +2,54 @@
 
 This guide documents common SQL patterns specifically tailored for credit risk analysis at Shopify. These patterns provide reusable code templates for frequent analysis needs.
 
+## Table of Contents
+
+- [Time-Series Analysis Patterns](#time-series-analysis-patterns)
+  - [Daily Trend Analysis](#1-daily-trend-analysis)
+  - [Rolling Average Calculation](#2-rolling-average-calculation)
+  - [Year-over-Year Comparison](#3-year-over-year-comparison)
+- [Aggregation Patterns](#aggregation-patterns)
+  - [Chargeback Rate Calculation](#1-chargeback-rate-calculation)
+  - [Risk Score Aggregation](#2-risk-score-aggregation)
+  - [Segmentation Analysis](#3-segmentation-analysis)
+- [Filtering Patterns](#filtering-patterns)
+  - [Dynamic Date Range Filtering](#1-dynamic-date-range-filtering)
+  - [Nested Filtering](#2-nested-filtering)
+  - [Exclusion Filtering](#3-exclusion-filtering)
+- [Window Function Patterns](#window-function-patterns)
+  - [Ranking Merchants by Risk](#1-ranking-merchants-by-risk)
+  - [Detecting Anomalies with Window Functions](#2-detecting-anomalies-with-window-functions)
+  - [Cumulative Metrics Calculation](#3-cumulative-metrics-calculation)
+- [CTE Patterns for Complex Analysis](#cte-patterns-for-complex-analysis)
+  - [Multi-Step Analysis Pattern](#1-multi-step-analysis-pattern)
+  - [Cohort Analysis Pattern](#2-cohort-analysis-pattern)
+  - [Funnel Analysis Pattern](#3-funnel-analysis-pattern)
+- [Additional Patterns](#additional-patterns)
+  - [Reserve Impact Analysis](#1-reserve-impact-analysis)
+  - [Fraud Velocity Check](#2-fraud-velocity-check)
+  - [Shop Performance Transition Matrix](#3-shop-performance-transition-matrix)
+- [When to Use These Patterns](#when-to-use-these-patterns)
+- [Best Practices When Using These Patterns](#best-practices-when-using-these-patterns)
+- [Temporal Fields Documentation](#temporal-fields-documentation)
+
 ## Time-Series Analysis Patterns
 
 ### 1. Daily Trend Analysis
 
 ```sql
--- Daily trend analysis over the last 90 days
+-- Purpose: Track daily transaction metrics over the past 90 days
+-- This query calculates daily transaction counts, volumes, and merchant counts
+-- with day-over-day changes to identify trends
 
 WITH daily_metrics AS (
   SELECT 
-    DATE(order_transaction_created_at) AS date,
-    COUNT(*) AS transaction_count,
-    SUM(amount_local) AS total_amount,
-    COUNT(DISTINCT shop_id) AS merchant_count
+    DATE(order_transaction_created_at) AS date,                 -- Group by transaction date
+    COUNT(*) AS transaction_count,                              -- Daily transaction volume
+    SUM(amount_local) AS total_amount,                          -- Daily monetary volume
+    COUNT(DISTINCT shop_id) AS merchant_count                   -- Number of active merchants per day
   FROM `shopify-dw.money_products.order_transactions_payments_summary`
   WHERE order_transaction_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
-    AND order_transaction_status = 'success'
+    AND order_transaction_status = 'success'                    -- Only count successful transactions
   GROUP BY DATE(order_transaction_created_at)
 )
 
@@ -26,7 +58,7 @@ SELECT
   transaction_count,
   total_amount,
   merchant_count,
-  -- Calculate day-over-day changes
+  -- Calculate day-over-day changes to identify trends
   transaction_count - LAG(transaction_count) OVER(ORDER BY date) AS transaction_count_change,
   (transaction_count - LAG(transaction_count) OVER(ORDER BY date)) / 
     NULLIF(LAG(transaction_count) OVER(ORDER BY date), 0) AS transaction_count_pct_change
@@ -37,13 +69,15 @@ ORDER BY date
 ### 2. Rolling Average Calculation
 
 ```sql
--- 7-day rolling average for key metrics
+-- Purpose: Calculate rolling averages for chargeback metrics
+-- This query creates 7-day and 28-day rolling averages to smooth out daily fluctuations
+-- and identify underlying trends in chargeback activity
 
 WITH daily_chargebacks AS (
   SELECT 
-    DATE(shopify_chargeback_created_at) AS date,
-    COUNT(*) AS chargeback_count,
-    SUM(chargeback_amount_usd) AS chargeback_amount
+    DATE(shopify_chargeback_created_at) AS date,                -- Group by chargeback date
+    COUNT(*) AS chargeback_count,                               -- Number of chargebacks per day
+    SUM(chargeback_amount_usd) AS chargeback_amount             -- Total chargeback amount in USD
   FROM `shopify-dw.money_products.chargebacks_summary`
   WHERE provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
   GROUP BY DATE(shopify_chargeback_created_at)
@@ -52,7 +86,7 @@ WITH daily_chargebacks AS (
 SELECT 
   date,
   chargeback_count,
-  -- Calculate 7-day rolling averages
+  -- Calculate 7-day rolling average to smooth out weekly patterns
   AVG(chargeback_count) OVER(
     ORDER BY date 
     ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
@@ -63,7 +97,7 @@ SELECT
     ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
   ) AS chargeback_amount_7day_avg,
   
-  -- Calculate 28-day rolling averages
+  -- Calculate 28-day rolling average for longer-term trend analysis
   AVG(chargeback_count) OVER(
     ORDER BY date 
     ROWS BETWEEN 27 PRECEDING AND CURRENT ROW
@@ -711,33 +745,35 @@ ORDER BY
 ### 1. Reserve Impact Analysis
 
 ```sql
--- Reserve impact analysis pattern
+-- Purpose: Analyze the impact of reserves on merchant cash flow
+-- This query calculates the estimated reserve amount and its impact on 
+-- merchant balance for different reserve types
 
 WITH merchant_reserves AS (
   SELECT
     shop_id,
-    reserve_type,
-    percentage,
-    period_in_days
+    reserve_type,                                               -- Type of reserve (percentage, fixed, etc.)
+    percentage,                                                 -- Reserve percentage for percentage-based reserves
+    period_in_days                                              -- Rolling reserve period in days
   FROM `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations`
-  WHERE is_active = TRUE
+  WHERE is_active = TRUE                                        -- Only consider active reserves
 ),
 
 daily_processing AS (
   SELECT
     shop_id,
     date,
-    gpv
+    gpv                                                         -- Gross payment volume for the day
   FROM `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1`
   WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
-    AND currency = 'USD'
+    AND currency = 'USD'                                        -- Limit to USD for consistency
 ),
 
 daily_balances AS (
   SELECT
     shop_id,
     date,
-    balance
+    balance                                                     -- Daily balance in the merchant account
   FROM `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary`
   WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     AND currency = 'USD'
@@ -751,13 +787,13 @@ SELECT
   r.period_in_days,
   p.gpv,
   b.balance,
-  -- Calculate estimated reserve amount
+  -- Calculate estimated daily reserve amount based on reserve type
   CASE
     WHEN r.reserve_type = 'percentage' THEN p.gpv * r.percentage / 100
     ELSE NULL
   END AS estimated_daily_reserve,
   
-  -- Calculate reserve's impact on balance
+  -- Calculate the impact of the reserve on the merchant's available balance
   CASE
     WHEN r.reserve_type = 'percentage' THEN 
       (p.gpv * r.percentage / 100) / NULLIF(b.balance, 0)

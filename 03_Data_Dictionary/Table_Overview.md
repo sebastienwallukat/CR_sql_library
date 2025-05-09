@@ -12,6 +12,24 @@ This document provides a comprehensive overview of all data tables used by the C
 - [Risk Assessment Tables](#risk-assessment-tables)
 - [Miscellaneous Tables](#miscellaneous-tables)
 
+## Key Tables for Credit Risk Analytics
+
+These tables are most commonly used in Credit Risk queries and reports:
+
+| Table Name | Description | Documentation | Data Type |
+|------------|-------------|--------------|-----------|
+| `shopify-dw.money_products.chargebacks_summary` | Comprehensive chargebacks summary data | [Schema](./Chargeback_Tables.md#chargebacks_summary) | TIMESTAMP |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot` | Chargeback count/rate at any given date | [Schema](./Chargeback_Tables.md#shop_chargeback_rates_daily_snapshot) | DATE |
+| `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` | Current chargeback rates | [Schema](./Chargeback_Tables.md#shop_chargeback_rates_current) | DATE |
+| `shopify-dw.risk.trust_platform_tickets_summary_v1` | Tickets summary with CR ticket filtering capability | [Schema](./Trust_Platform_Tables.md#trust_platform_tickets_summary_v1) | TIMESTAMP |
+| `shopify-dw.finance.shop_gmv_current` | GMV/GPV data (aggregated per day and timeframes) | [Schema](./Financial_Tables.md#shop_gmv_current) | DATE |
+| `shopify-dw.intermediate.shop_gmv_daily_summary_v1_1` | Detailed daily GMV data for in-depth time series analysis | [Schema](./Financial_Tables.md#shop_gmv_daily_summary_v1_1) | DATE |
+| `shopify-dw.money_products.shopify_payments_balance_account_daily_cumulative_summary` | GPV balance at current moment or any given date | [Schema](./Financial_Tables.md#shopify_payments_balance_account_daily_cumulative_summary) | DATE |
+| `shopify-dw.base.base__payments_refunds` | Comprehensive refunds data | [Schema](./Financial_Tables.md#base__payments_refunds) | TIMESTAMP |
+| `sdp-prd-cti-data.intermediate.shop_current_shopify_payments_status` | Current Shopify Payments status | [Schema](./Shop_Tables.md#shop_current_shopify_payments_status) | TIMESTAMP |
+| `shopify-dw.money_products.order_transactions_payments_summary` | Detailed order information | [Schema](./Financial_Tables.md#order_transactions_payments_summary) | TIMESTAMP |
+| `sdp-prd-cti-data.base.base__shopify_payments_reserve_configurations` | Merchant reserve setup and configuration | [Schema](./Financial_Tables.md#base__shopify_payments_reserve_configurations) | TIMESTAMP |
+
 ## Table of Contents
 
 - [Chargeback and Dispute Tables](#chargeback-and-dispute-tables)

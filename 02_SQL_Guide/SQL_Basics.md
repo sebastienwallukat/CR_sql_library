@@ -4,6 +4,23 @@
 
 This guide provides a comprehensive introduction to SQL (Structured Query Language) specifically tailored for credit risk analysis at Shopify. SQL is the primary language used to query and analyze data in our BigQuery environment.
 
+## Table of Contents
+
+- [Basic SQL Structure](#basic-sql-structure)
+  - [The SELECT Clause](#the-select-clause)
+  - [The FROM Clause](#the-from-clause)
+  - [The WHERE Clause](#the-where-clause)
+  - [The GROUP BY Clause](#the-group-by-clause)
+  - [The HAVING Clause](#the-having-clause)
+  - [The ORDER BY Clause](#the-order-by-clause)
+  - [Joining Tables](#joining-tables)
+- [Aliases](#aliases)
+- [Aggregate Functions](#aggregate-functions)
+- [CASE Statements](#case-statements)
+- [Common SQL Patterns for Credit Risk Analysis](#common-sql-patterns-for-credit-risk-analysis)
+- [Next Steps](#next-steps)
+- [Resources](#resources)
+
 ## Basic SQL Structure
 
 All SQL queries follow a logical structure that mirrors how we think about data analysis:
@@ -368,14 +385,14 @@ LIMIT 100
 ```sql
 -- Identifying high-risk merchants
 SELECT
-  s.shop_id,
-  s.shop_name,
-  s.created_at AS shop_created_at,
-  DATE_DIFF(CURRENT_DATE(), DATE(s.created_at), DAY) AS shop_age_days,
-  c.chargeback_rate_30d,
-  c.chargeback_count_30d,
-  c.sp_transaction_amount_usd_30d,
-  r.risk_score
+  s.shop_id,                                                -- Unique merchant identifier
+  s.shop_name,                                              -- Name of the merchant shop
+  s.created_at AS shop_created_at,                          -- When the shop was created
+  DATE_DIFF(CURRENT_DATE(), DATE(s.created_at), DAY) AS shop_age_days,  -- Shop age in days
+  c.chargeback_rate_30d,                                    -- 30-day chargeback rate
+  c.chargeback_count_30d,                                   -- Number of chargebacks in last 30 days
+  c.sp_transaction_amount_usd_30d,                          -- Transaction volume in last 30 days
+  r.risk_score                                              -- Risk assessment score
 FROM
   `shopify-dw.accounts_and_administration.shops` s
 JOIN
@@ -383,12 +400,12 @@ JOIN
 JOIN
   `sdp-prd-cti-data.merchant.shop_risk_indicators` r ON s.shop_id = r.shop_id
 WHERE
-  c.sp_transaction_amount_usd_30d > 10000  -- Only merchants with meaningful volume
+  c.sp_transaction_amount_usd_30d > 10000                   -- Only merchants with meaningful volume
   AND (
-    c.chargeback_rate_30d > 0.01  -- Over 1% chargeback rate
-    OR r.risk_score > 0.8  -- Or high risk score
+    c.chargeback_rate_30d > 0.01                            -- Over 1% chargeback rate
+    OR r.risk_score > 0.8                                   -- Or high risk score
   )
-  AND r.snapshot_date = CURRENT_DATE()  -- Most recent risk scores
+  AND r.snapshot_date = CURRENT_DATE()                      -- Most recent risk scores
 ORDER BY
   c.chargeback_rate_30d DESC
 LIMIT 100
@@ -399,31 +416,31 @@ LIMIT 100
 ```sql
 -- Analyzing chargeback trends over time
 SELECT
-  shop_id,
-  snapshot_date,
-  chargeback_rate_30d,
-  sp_transaction_amount_usd_30d,
+  shop_id,                                          -- Merchant identifier
+  snapshot_date,                                    -- Date of the snapshot
+  chargeback_rate_30d,                              -- Chargeback rate for trailing 30 days
+  sp_transaction_amount_usd_30d,                    -- Transaction volume in USD for trailing 30 days
   -- Calculate the 7-day moving average of chargeback rate
   AVG(chargeback_rate_30d) OVER (
     PARTITION BY shop_id
     ORDER BY snapshot_date
     ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-  ) AS chargeback_rate_7day_avg,
+  ) AS chargeback_rate_7day_avg,                    -- 7-day moving average of chargeback rate
   -- Compare to previous day's rate
   LAG(chargeback_rate_30d) OVER (
     PARTITION BY shop_id
     ORDER BY snapshot_date
-  ) AS previous_day_rate,
+  ) AS previous_day_rate,                           -- Previous day's chargeback rate
   -- Calculate day-over-day change
   chargeback_rate_30d - LAG(chargeback_rate_30d) OVER (
     PARTITION BY shop_id
     ORDER BY snapshot_date
-  ) AS day_over_day_change
+  ) AS day_over_day_change                          -- Daily change in chargeback rate
 FROM
   `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot`
 WHERE
-  shop_id = 12345  -- Specific shop analysis
-  AND snapshot_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+  shop_id = 12345                                   -- Specific shop analysis
+  AND snapshot_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)  -- Last 90 days
 ORDER BY
   snapshot_date DESC
 ```
@@ -433,24 +450,24 @@ ORDER BY
 ```sql
 -- Comparing risk metrics across industry categories
 SELECT
-  s.industry,
-  COUNT(DISTINCT s.shop_id) AS merchant_count,
-  AVG(c.chargeback_rate_30d) AS avg_chargeback_rate,
-  APPROX_QUANTILES(c.chargeback_rate_30d, 100)[OFFSET(50)] AS median_chargeback_rate,
-  APPROX_QUANTILES(c.chargeback_rate_30d, 100)[OFFSET(75)] AS p75_chargeback_rate,
-  APPROX_QUANTILES(c.chargeback_rate_30d, 100)[OFFSET(90)] AS p90_chargeback_rate,
-  SUM(c.chargeback_count_30d) AS total_chargebacks,
-  SUM(c.sp_transaction_amount_usd_30d) AS total_sp_transaction_amount_30d
+  s.industry,                                                  -- Industry category
+  COUNT(DISTINCT s.shop_id) AS merchant_count,                 -- Number of merchants in category
+  AVG(c.chargeback_rate_30d) AS avg_chargeback_rate,           -- Average chargeback rate
+  APPROX_QUANTILES(c.chargeback_rate_30d, 100)[OFFSET(50)] AS median_chargeback_rate,  -- Median rate
+  APPROX_QUANTILES(c.chargeback_rate_30d, 100)[OFFSET(75)] AS p75_chargeback_rate,     -- 75th percentile
+  APPROX_QUANTILES(c.chargeback_rate_30d, 100)[OFFSET(90)] AS p90_chargeback_rate,     -- 90th percentile
+  SUM(c.chargeback_count_30d) AS total_chargebacks,            -- Total chargebacks
+  SUM(c.sp_transaction_amount_usd_30d) AS total_sp_transaction_amount_30d  -- Total transaction volume
 FROM
   `shopify-dw.accounts_and_administration.shops` s
 JOIN
   `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` c ON s.shop_id = c.shop_id
 WHERE
-  c.sp_transaction_amount_usd_30d > 5000  -- Only include merchants with meaningful volume
+  c.sp_transaction_amount_usd_30d > 5000                       -- Only include merchants with meaningful volume
 GROUP BY
   s.industry
 HAVING
-  COUNT(DISTINCT s.shop_id) >= 10  -- Only include categories with enough merchants
+  COUNT(DISTINCT s.shop_id) >= 10                              -- Only include categories with enough merchants
 ORDER BY
   avg_chargeback_rate DESC
 ```
@@ -460,7 +477,7 @@ ORDER BY
 Now that you're familiar with basic SQL, proceed to these more advanced topics:
 
 - [Common Table Expressions (CTEs)](./CTE_Guide.md) - For more readable, modular queries
-- [SQL Best Practices](./SQL_Best_Practices.md) - For writing efficient and maintainable SQL
+- [Writing Better Queries](./Writing_Better_Queries.md) - For writing efficient and maintainable SQL
 - [Common SQL Patterns](./Common_SQL_Patterns.md) - For reusable analysis patterns
 - [SQL Troubleshooting](./SQL_Troubleshooting.md) - For fixing common SQL errors
 

@@ -190,28 +190,33 @@ When working with chargeback data, the following metrics are commonly used:
 
 1. **Chargeback Rate**: The ratio of chargeback count to total transaction count
    ```sql
+   -- Get chargeback rates for a specific shop across different time windows
    SELECT 
        shop_id,
-       chargeback_rate_30d,
-       chargeback_rate_60d,
-       chargeback_rate_90d
+       chargeback_rate_30d,   -- 30-day chargeback rate
+       chargeback_rate_60d,   -- 60-day chargeback rate 
+       chargeback_rate_90d    -- 90-day chargeback rate
    FROM `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current`
    WHERE shop_id = 12345678
    ```
 
 2. **Chargeback Velocity**: The rate at which chargebacks are occurring
    ```sql
+   -- Count the number of chargebacks in the last 7 days for a specific shop
+   -- Used to detect sudden spikes in chargeback activity
    SELECT 
        shop_id,
        COUNT(*) as chargebacks_last_7_days
    FROM `shopify-dw.money_products.chargebacks_summary`
    WHERE shop_id = 12345678
-   AND provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+     AND provider_chargeback_created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
    GROUP BY shop_id
    ```
 
 3. **Dominant Chargeback Reason**: The most common reason for chargebacks
    ```sql
+   -- Identify the most frequent chargeback reason for a specific shop
+   -- Helps determine root cause of chargebacks (fraud, product issues, etc.)
    SELECT 
        shop_id,
        reason,
@@ -225,6 +230,8 @@ When working with chargeback data, the following metrics are commonly used:
 
 4. **Chargeback Win Rate**: The percentage of chargebacks that were successfully disputed
    ```sql
+   -- Calculate the percentage of chargebacks that were successfully disputed
+   -- Indicates merchant's effectiveness at fighting illegitimate chargebacks
    SELECT 
        shop_id,
        COUNTIF(status = 'won') / COUNT(*) as win_rate
@@ -238,18 +245,21 @@ When working with chargeback data, the following metrics are commonly used:
 ### Query 1: Identify Shops with High Chargeback Rates
 
 ```sql
+-- Purpose: Find shops with elevated chargeback rates and significant payment volume
+-- This query identifies merchants that may represent higher risk based on recent activity
+
 SELECT 
     s.shop_id,
     s.shop_name, 
-    c.chargeback_count_30d,
-    c.sp_transaction_amount_usd_30d,
-    c.chargeback_rate_30d
+    c.chargeback_count_30d,                  -- Number of chargebacks in last 30 days
+    c.sp_transaction_amount_usd_30d,         -- Payment volume in last 30 days
+    c.chargeback_rate_30d                    -- Chargeback rate in last 30 days
 FROM `sdp-prd-cti-data.intermediate.shop_chargeback_rates_current` c
 JOIN `sdp-prd-cti-data.intermediate.shop_insights_shops` s 
   ON c.shop_id = s.shop_id
-WHERE c.chargeback_rate_30d > 0.01  -- 1% threshold
-  AND c.sp_transaction_amount_usd_30d > 5000  -- Minimum payment volume
-  AND c.chargeback_count_30d >= 3   -- Minimum chargeback count
+WHERE c.chargeback_rate_30d > 0.01           -- 1% threshold for high-risk classification
+  AND c.sp_transaction_amount_usd_30d > 5000 -- Minimum payment volume for significance
+  AND c.chargeback_count_30d >= 3            -- Minimum chargeback count to reduce noise
 ORDER BY c.chargeback_rate_30d DESC
 LIMIT 100
 ```
@@ -257,7 +267,11 @@ LIMIT 100
 ### Query 2: Chargeback Reason Analysis
 
 ```sql
+-- Purpose: Analyze the distribution of chargeback reasons for a specific shop
+-- Creates a breakdown of chargebacks by reason type with percentage calculations
+
 WITH reason_counts AS (
+    -- Get counts and amounts by reason
     SELECT
         shop_id,
         reason,
@@ -273,7 +287,9 @@ SELECT
     reason,
     count,
     total_amount_usd,
+    -- Calculate percentage of total chargebacks by count
     ROUND(count / SUM(count) OVER (PARTITION BY shop_id) * 100, 2) as percent_of_total_count,
+    -- Calculate percentage of total chargebacks by amount
     ROUND(total_amount_usd / SUM(total_amount_usd) OVER (PARTITION BY shop_id) * 100, 2) as percent_of_total_amount
 FROM reason_counts
 WHERE shop_id = 12345678  -- Replace with specific shop ID
@@ -283,14 +299,17 @@ ORDER BY count DESC
 ### Query 3: Chargeback Rate Trend Analysis
 
 ```sql
+-- Purpose: Track the evolution of chargeback rates over time for a specific shop
+-- Useful for identifying trends and assessing the effectiveness of risk mitigation measures
+
 SELECT
-    date,
-    chargeback_rate_30d,
-    chargeback_count_30d,
-    sp_transaction_amount_usd_30d
+    date,                           -- Snapshot date
+    chargeback_rate_30d,            -- 30-day chargeback rate
+    chargeback_count_30d,           -- Number of chargebacks in 30-day window
+    sp_transaction_amount_usd_30d   -- Payment volume in 30-day window
 FROM `sdp-prd-cti-data.intermediate.shop_chargeback_rates_daily_snapshot`
-WHERE shop_id = 12345678  -- Replace with specific shop ID
-  AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+WHERE shop_id = 12345678            -- Replace with specific shop ID
+  AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)  -- Last 90 days of data
 ORDER BY date
 ```
 

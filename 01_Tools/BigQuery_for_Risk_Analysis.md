@@ -1,4 +1,4 @@
-# BigQuery Guide for Credit Risk Analysis
+# BigQuery for Risk Analysis
 
 This guide provides practical instructions for using Google BigQuery for credit risk analysis at Shopify, focusing on best practices, optimization, and common use cases.
 

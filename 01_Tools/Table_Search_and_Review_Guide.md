@@ -1,4 +1,4 @@
-# Table Search and Review Guide for Credit Risk Analysis
+# Finding the Right Tables for Credit Risk Analysis
 
 This guide provides a practical overview of the tools and processes for finding, understanding, and using data tables effectively for Credit Risk analysis at Shopify.
 
@@ -16,12 +16,13 @@ This guide provides a practical overview of the tools and processes for finding,
 
 ## Overview
 
-Shopify has several tools for discovering and understanding data tables:
+Finding the right tables is the first step in any successful data analysis. Shopify has several tools for discovering and understanding data tables:
 
 - **Plex** - Shopify's data catalog and discovery platform
 - **Metadata Portal** - Resource for detailed BigQuery table information
+- **Credit Risk Data Catalog** - Our team's curated list of essential tables
 
-This guide will help you leverage these tools efficiently for Credit Risk analysis tasks.
+This guide will help you leverage these tools efficiently to find the exact data you need for your Credit Risk analysis tasks.
 
 ## Finding Tables
 
@@ -117,7 +118,9 @@ Data lineage helps you understand how tables are connected:
 
 ## Key Tables for Credit Risk
 
-Important tables to locate and explore:
+For a comprehensive list of the most important tables for Credit Risk analysis, refer to the [Data Tables Catalog](../03_Data_Dictionary/Table_Overview.md#key-tables-for-credit-risk-analytics).
+
+Here are some of the most frequently used tables:
 
 | Table Name | Description | What to Look For |
 |------------|-------------|------------------|
